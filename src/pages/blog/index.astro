@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import TerminalWindow from '../../components/TerminalWindow.astro'
+import { getCollection } from 'astro:content'
+import { SITE } from '../../config/site'
+
+const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true)))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+
+const byYear = new Map<number, typeof posts>()
+for (const p of posts) {
+  const y = p.data.pubDate.getFullYear()
+  if (!byYear.has(y)) byYear.set(y, [])
+  byYear.get(y)!.push(p)
+}
+---
+
+<BaseLayout title={`blog — ${SITE.title}`} description={`Articles by ${SITE.name}: security research, reverse engineering, web tooling, and the occasional prank.`}>
+  <TerminalWindow title="guest@gods.dev: ~/blog">
+    <p class="muted">$ ls -la ~/blog  <span aria-hidden="true">— {posts.length} article(s), 0 regrets</span></p>
+    {[...byYear.entries()].map(([year, yearPosts]) => (
+      <section>
+        <h2 class="muted">{year}/</h2>
+        <ul class="post-list">
+          {yearPosts.map((p) => (
+            <li>
+              <span class="muted" aria-hidden="true">-rw-r--r--</span>
+              <time datetime={p.data.pubDate.toISOString().slice(0, 10)} class="muted">
+                {p.data.pubDate.toISOString().slice(0, 10)}
+              </time>
+              <a class="term-link" href={`/blog/${p.id}/`}>{p.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    {posts.length === 0 && <p class="muted">No posts yet. The gods are still writing.</p>}
+  </TerminalWindow>
+</BaseLayout>
+
+<style>
+  .post-list { list-style: none; padding: 0; }
+  .post-list li { display: flex; gap: 1rem; padding: 0.25rem 0; flex-wrap: wrap; }
+  h1 { font-size: 1.3rem; }
+</style>

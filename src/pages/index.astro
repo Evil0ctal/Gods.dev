@@ -1,10 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { getCollection } from 'astro:content'
 import { SITE } from '../config/site'
 
-// TODO(Task 12): src/content.config.ts does not exist yet — restore the
-// getCollection('blog', ...) block once the content collection schema lands.
-const posts: Array<{ slug: string; title: string; description: string; date: string }> = []
+const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true)))
+  .map((p) => ({
+    slug: p.id,
+    title: p.data.title,
+    description: p.data.description,
+    date: p.data.pubDate.toISOString().slice(0, 10),
+  }))
+  .sort((a, b) => b.date.localeCompare(a.date))
 
 const personLd = {
   '@context': 'https://schema.org',
