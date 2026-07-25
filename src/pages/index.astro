@@ -1,13 +1,97 @@
 ---
-// Placeholder — replaced by the terminal homepage in Task 10.
-import '../styles/global.css'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { SITE } from '../config/site'
+
+// TODO(Task 12): src/content.config.ts does not exist yet — restore the
+// getCollection('blog', ...) block once the content collection schema lands.
+const posts: Array<{ slug: string; title: string; description: string; date: string }> = []
+
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.name,
+  url: SITE.url,
+  sameAs: [SITE.github],
+  description: SITE.description,
+}
 ---
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>gods.dev</title>
-  </head>
-  <body>
-    <h1>gods.dev — under construction</h1>
-  </body>
-</html>
+
+<BaseLayout title={SITE.title} description={SITE.description} jsonLd={personLd}>
+  <Fragment
+    set:html={`<!--
+    ██████╗  ██████╗ ██████╗ ███████╗   ██████╗ ███████╗██╗   ██╗
+   ██╔════╝ ██╔═══██╗██╔══██╗██╔════╝   ██╔══██╗██╔════╝██║   ██║
+   ██║  ███╗██║   ██║██║  ██║███████╗   ██║  ██║█████╗  ██║   ██║
+   ██║   ██║██║   ██║██║  ██║╚════██║   ██║  ██║██╔══╝  ╚██╗ ██╔╝
+   ╚██████╔╝╚██████╔╝██████╔╝███████║██╗██████╔╝███████╗ ╚████╔╝
+    ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝╚═╝╚═════╝ ╚══════╝  ╚═══╝
+
+   well well well. a source reader. i like you already.
+   the console has something for you. so does ~/.secrets — if you can find it.
+   flags look like gods{...} and the terminal knows what to do with them.
+-->`}
+  />
+  <main id="terminal" class="term-window" aria-label="Interactive terminal">
+    <div class="term-titlebar">
+      <div class="dots"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
+      <span class="title">guest@gods.dev: ~</span>
+    </div>
+    <div class="term-body">
+      <div id="term-output" aria-live="polite">
+        <section id="motd">
+          <pre class="line-ascii" aria-hidden="true">{`   ▄████  ▒█████  ▓█████▄   ██████     ▓█████▄ ▓█████  ██▒   █▓
+  ██▒ ▀█▒▒██▒  ██▒▒██▀ ██▌▒██    ▒     ▒██▀ ██▌▓█   ▀ ▓██░   █▒
+ ▒██░▄▄▄░▒██░  ██▒░██   █▌░ ▓██▄       ░██   █▌▒███    ▓██  █▒░
+ ░▓█  ██▓▒██   ██░░▓█▄   ▌  ▒   ██▒    ░▓█▄   ▌▒▓█  ▄   ▒██ █░░
+ ░▒▓███▀▒░ ████▓▒░░▒████▓ ▒██████▒▒ ██▓░▒████▓ ░▒████▒   ▒▀█░
+  ░▒   ▒ ░ ▒░▒░▒░  ▒▒▓  ▒ ▒ ▒▓▒ ▒ ░ ▒▓▒ ▒▒▓  ▒ ░░ ▒░ ░   ░ ▐░`}</pre>
+          <h1>{SITE.name} <span class="muted">@ gods.dev</span></h1>
+          <p>{SITE.description}</p>
+          <nav aria-label="Main">
+            <a class="term-link" href="/blog/">blog</a> ·
+            <a class="term-link" href="/about/">about</a> ·
+            <a class="term-link" href="/projects/">projects</a> ·
+            <a class="term-link" href={SITE.github}>github</a>
+          </nav>
+          <p class="muted">
+            Type <button type="button" class="cmd-link" data-cmd="help">help</button> to begin.
+            Mouse users: commands are clickable. Keyboard users: you already know what to do.
+          </p>
+        </section>
+      </div>
+      <div id="term-input-line" hidden>
+        <label class="sr-only" for="term-input">Terminal command input</label>
+        <span id="term-prompt">guest@gods.dev:~$</span>
+        <input id="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" />
+      </div>
+    </div>
+  </main>
+  <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts })} />
+  <script>
+    import { mountTerminal } from '../components/terminal/index'
+    mountTerminal()
+  </script>
+</BaseLayout>
+
+<style>
+  #term-input-line { display: flex; gap: 0.6rem; margin-top: 0.35rem; }
+  #term-input-line[hidden] { display: none; }
+  #term-prompt { color: var(--ok); white-space: nowrap; }
+  #term-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--fg);
+    font: inherit;
+    caret-color: var(--accent);
+    padding: 0;
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  #motd h1 { font-size: 1.15rem; margin: 0.8rem 0 0.3rem; }
+  #motd p { margin: 0.4rem 0; }
+  #term-output :global(.term-line) { white-space: pre-wrap; word-break: break-word; min-height: 1.2em; }
+</style>
