@@ -6,6 +6,9 @@ import { HOME } from './core/vfs'
 import { registerAll } from './commands/index'
 import { THEMES } from './commands/theme'
 import { createTerminalUi } from './ui/terminal-ui'
+import { startMatrixRain } from './ui/matrix-rain'
+import { listenKonami } from './ui/konami'
+import { printConsoleBanner } from './ui/console-banner'
 
 export function mountTerminal(): void {
   const root = document.getElementById('terminal')
@@ -44,8 +47,10 @@ export function mountTerminal(): void {
     historyPrev: () => history.prev(),
     historyNext: () => history.next(),
     onEffect: (effect) => {
-      if (effect === 'matrix') ui.printHtml('[matrix rain loading...]', 'line-muted') // replaced in Task 11
+      if (effect === 'matrix') startMatrixRain()
     },
   })
   void ui.start()
+  printConsoleBanner()
+  listenKonami(() => startMatrixRain())
 }
