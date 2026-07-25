@@ -1,2 +1,80 @@
-/* gods.dev global styles — populated in themes/layout task */
+@import './themes.css';
+
 :root { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'SFMono-Regular', 'JetBrains Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+::selection { background: var(--selection); }
+
+a, .term-link { color: var(--accent); text-decoration-color: var(--fg-muted); }
+a:hover, .term-link:hover { color: var(--accent-2); }
+
+.muted { color: var(--fg-muted); }
+
+.cmd-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+.cmd-link:hover { color: var(--accent-2); }
+
+.line-error { color: var(--err); }
+.line-success { color: var(--ok); }
+.line-muted { color: var(--fg-muted); }
+.line-ascii { color: var(--accent-2); white-space: pre; }
+
+/* terminal window chrome (homepage + blog frames) */
+.term-window {
+  max-width: 60rem;
+  margin: 2rem auto;
+  border: 1px solid color-mix(in srgb, var(--fg-muted) 40%, transparent);
+  border-radius: 8px;
+  background: var(--bg-elev);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.term-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  background: var(--bg-titlebar);
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg-muted) 25%, transparent);
+}
+.term-titlebar .dots { display: flex; gap: 0.4rem; }
+.term-titlebar .dot { width: 0.72rem; height: 0.72rem; border-radius: 50%; }
+.dot-r { background: #ff5f56; } .dot-y { background: #ffbd2e; } .dot-g { background: #27c93f; }
+.term-titlebar .title { margin-inline: auto; }
+.term-body { padding: 1.1rem 1.3rem 1.6rem; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--bg-elev);
+  color: var(--fg);
+  padding: 0.5rem 1rem;
+  z-index: 10000;
+}
+.skip-link:focus { left: 0; }
+
+@media (max-width: 640px) {
+  .term-window { margin: 0; border-radius: 0; border-inline: none; min-height: 100dvh; }
+  html, body { font-size: 14px; }
+}

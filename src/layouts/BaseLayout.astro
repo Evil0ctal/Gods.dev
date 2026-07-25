@@ -1,0 +1,62 @@
+---
+import '../styles/global.css'
+import { SITE } from '../config/site'
+
+interface Props {
+  title: string
+  description: string
+  ogImage?: string
+  type?: 'website' | 'article'
+  jsonLd?: Record<string, unknown>
+  noindex?: boolean
+}
+
+const { title, description, ogImage = '/og-default.png', type = 'website', jsonLd, noindex = false } = Astro.props
+const canonical = new URL(Astro.url.pathname, SITE.url).href
+const ogImageAbs = new URL(ogImage, SITE.url).href
+---
+
+<!doctype html>
+<html lang="en" data-theme="default">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageAbs} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageAbs} />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <script is:inline>
+      // theme before first paint — no FOUC
+      try {
+        var t = localStorage.getItem('gods:theme')
+        if (t && ['default', 'crt', 'amber', 'light'].indexOf(t) !== -1) {
+          document.documentElement.dataset.theme = t
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#site-nav">Skip to navigation</a>
+    <slot />
+    <footer id="site-nav" class="muted" style="text-align:center; padding: 1rem; font-size: 0.8rem;">
+      <nav aria-label="Site">
+        <a href="/">~</a> · <a href="/blog/">blog</a> · <a href="/about/">about</a> ·
+        <a href="/projects/">projects</a> · <a href={SITE.github}>github</a> · <a href="/rss.xml">rss</a>
+      </nav>
+      <p>© 2026 {SITE.name} — {SITE.tagline}</p>
+    </footer>
+  </body>
+</html>

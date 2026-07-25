@@ -1,0 +1,95 @@
+/* ── gods.dev theme system ─────────────────────────────
+   Themes switch via <html data-theme="...">.
+   Try: default | crt | amber | light          */
+
+:root,
+:root[data-theme='default'] {
+  --bg: #16161e;
+  --bg-elev: #1a1b26;
+  --bg-titlebar: #13131a;
+  --fg: #c0caf5;
+  --fg-muted: #565f89;
+  --accent: #7aa2f7;
+  --accent-2: #bb9af7;
+  --ok: #9ece6a;
+  --err: #f7768e;
+  --warn: #e0af68;
+  --glow: transparent;
+  --selection: #33467c;
+}
+
+:root[data-theme='crt'] {
+  --bg: #020a02;
+  --bg-elev: #041004;
+  --bg-titlebar: #030c03;
+  --fg: #33ff66;
+  --fg-muted: #1d8c3d;
+  --accent: #66ff99;
+  --accent-2: #99ffbb;
+  --ok: #66ff99;
+  --err: #ff5555;
+  --warn: #ffcc33;
+  --glow: rgba(51, 255, 102, 0.55);
+  --selection: #0d4d1f;
+}
+
+:root[data-theme='amber'] {
+  --bg: #0d0800;
+  --bg-elev: #150d02;
+  --bg-titlebar: #100a01;
+  --fg: #ffb000;
+  --fg-muted: #8c6a1d;
+  --accent: #ffc933;
+  --accent-2: #ffdd66;
+  --ok: #ffc933;
+  --err: #ff5555;
+  --warn: #ffdd66;
+  --glow: rgba(255, 176, 0, 0.45);
+  --selection: #4d3800;
+}
+
+:root[data-theme='light'] {
+  --bg: #fafafa;
+  --bg-elev: #ffffff;
+  --bg-titlebar: #ececec;
+  --fg: #1a1a2e;
+  --fg-muted: #6b7280;
+  --accent: #2563eb;
+  --accent-2: #7c3aed;
+  --ok: #16a34a;
+  --err: #dc2626;
+  --warn: #d97706;
+  --glow: transparent;
+  --selection: #bfdbfe;
+}
+
+:root[data-theme='light'] { color-scheme: light; }
+
+/* CRT extras: phosphor glow + scanlines (reduced-motion drops the flicker) */
+:root[data-theme='crt'] body,
+:root[data-theme='amber'] body {
+  text-shadow: 0 0 6px var(--glow);
+}
+:root[data-theme='crt'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: crt-flicker 0.12s infinite;
+}
+@keyframes crt-flicker {
+  0% { opacity: 0.97; }
+  50% { opacity: 1; }
+  100% { opacity: 0.98; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme='crt'] body::after { animation: none; }
+}
