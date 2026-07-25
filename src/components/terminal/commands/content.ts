@@ -1,0 +1,75 @@
+import type { Command } from '../core/types'
+import { SITE } from '../../../config/site'
+import { PROJECTS } from '../../../data/projects'
+import { aLink, htmlLine, line } from '../core/utils'
+
+export const aboutCmd: Command = {
+  name: 'about',
+  description: 'who runs this machine',
+  run() {
+    return {
+      lines: [
+        line(`${SITE.name} — security researcher & open-source developer.`),
+        line('I break things to understand them, then build tools so you can too.'),
+        line(SITE.tagline, 'muted'),
+        line(''),
+        htmlLine(`Full story: ${aLink('/about/', 'gods.dev/about')}`),
+      ],
+    }
+  },
+}
+
+export const projectsCmd: Command = {
+  name: 'projects',
+  description: 'selected open-source work',
+  run() {
+    const lines = PROJECTS.flatMap((p) => [
+      htmlLine(`${aLink(p.url, p.name)}  <span class="muted">[${p.tags.join(', ')}]</span>`),
+      line(`  ${p.description}`, 'muted'),
+    ])
+    return {
+      lines: [...lines, htmlLine(`More: ${aLink('/projects/', 'gods.dev/projects')}`)],
+    }
+  },
+}
+
+export const contactCmd: Command = {
+  name: 'contact',
+  description: 'reach the operator',
+  run() {
+    return {
+      lines: [
+        htmlLine(`GitHub  ${aLink(SITE.github, 'github.com/Evil0ctal')}`),
+        htmlLine(`Email   ${aLink(`mailto:${SITE.email}`, SITE.email)}`),
+        line('PGP     ask first. trust no one.', 'muted'),
+      ],
+    }
+  },
+}
+
+export const blogCmd: Command = {
+  name: 'blog',
+  description: 'read the blog',
+  usage: 'blog [read <slug>]',
+  run(args, ctx) {
+    if (args[0] === 'read') {
+      const slug = args[1]
+      const post = ctx.posts.find((p) => p.slug === slug)
+      if (!post) return { lines: [line(`blog: no such post: ${slug ?? ''}`, 'error')] }
+      return { lines: [line(`opening ~/blog/${post.slug}.md ...`, 'muted')], navigate: `/blog/${post.slug}/` }
+    }
+    if (ctx.posts.length === 0) {
+      return { lines: [line('No posts yet. The gods are still writing.', 'muted')] }
+    }
+    return {
+      lines: [
+        line('Latest transmissions:', 'muted'),
+        ...ctx.posts.map((p) =>
+          htmlLine(`  ${p.date}  <a class="term-link" href="/blog/${p.slug}/">${p.slug}</a> — ${p.title}`),
+        ),
+        line(''),
+        line('Open one:  blog read <slug>', 'muted'),
+      ],
+    }
+  },
+}
