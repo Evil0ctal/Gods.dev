@@ -11,9 +11,14 @@ async function run(page: Page, cmd: string): Promise<void> {
   await page.locator('#term-input').press('Enter')
 }
 
-test('static motd and nav are present for no-js visitors', async ({ page }) => {
+test('static motd and crawlable footer nav are present for no-js visitors', async ({ page }) => {
   await expect(page.locator('#motd h1')).toContainText('Evil0ctal')
-  await expect(page.locator('#motd nav a[href="/blog/"]')).toBeVisible()
+  // nav links stay in the DOM for crawlers/screen readers but are sr-only:
+  // clipped to a 1px box, so humans see only the copyright line
+  await expect(page.locator('footer nav a[href="/blog/"]')).toBeAttached()
+  const navBox = await page.locator('footer nav').boundingBox()
+  expect(navBox?.width ?? 0).toBeLessThanOrEqual(1)
+  await expect(page.locator('footer')).toContainText('© 2026 Evil0ctal')
 })
 
 test('help lists commands and hides easter eggs', async ({ page }) => {
