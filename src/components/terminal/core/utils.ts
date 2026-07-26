@@ -25,3 +25,37 @@ export function line(text: string, kind?: LineKind): OutputLine {
 export function htmlLine(html: string, kind?: LineKind): OutputLine {
   return { text: html, html: true, kind }
 }
+
+/* ── output styling primitives (shared design language) ────────────── */
+
+export type BadgeVariant = 'star' | 'tag' | 'cat' | 'intro' | 'easy' | 'medium' | 'hard' | 'ok' | 'warn'
+
+/** a rounded pill chip. text is escaped. */
+export function badge(text: string, variant: BadgeVariant): string {
+  return `<span class="badge badge-${variant}">${escapeHtml(text)}</span>`
+}
+
+/** render a tag list as #chips */
+export function tagChips(list: string[]): string {
+  return list.map((t) => `<span class="chip">#${escapeHtml(t)}</span>`).join(' ')
+}
+
+/** emphasize an entity name (accent-2, bold) */
+export function name(text: string): string {
+  return `<span class="out-name">${escapeHtml(text)}</span>`
+}
+
+/** a section header line: "▸ title" in accent */
+export function headLine(title: string): OutputLine {
+  return htmlLine(`<span class="out-head">${escapeHtml(title)}</span>`)
+}
+
+/** aligned key → value row for info tables (neofetch-style) */
+export function kvLine(key: string, value: string, pad = 10): OutputLine {
+  return htmlLine(`<span class="kv-key">${escapeHtml(key.padEnd(pad))}</span>${escapeHtml(value)}`)
+}
+
+/** a thin divider rule of the given width */
+export function ruleLine(width = 52): OutputLine {
+  return htmlLine(`<span class="out-rule">${'─'.repeat(width)}</span>`)
+}

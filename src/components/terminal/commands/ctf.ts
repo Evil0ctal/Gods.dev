@@ -7,23 +7,18 @@ import {
   scoreOf,
   totalPoints,
 } from '../core/challenges'
-import { cmdLink, escapeHtml, htmlLine, line } from '../core/utils'
-
-const DIFF_LABEL: Record<string, string> = {
-  intro: 'intro ',
-  easy: 'easy  ',
-  medium: 'medium',
-  hard: 'hard  ',
-}
+import { badge, cmdLink, escapeHtml, htmlLine, line } from '../core/utils'
+import type { BadgeVariant } from '../core/utils'
 
 function scoreboardLines(solved: string[]) {
   const score = scoreOf(solved)
   const total = totalPoints()
   const count = new Set(solved).size
+  const pct = total > 0 ? Math.round((score / total) * 20) : 0
+  const bar = '█'.repeat(pct) + '░'.repeat(20 - pct)
   return [
-    line(
-      `score: ${score}/${total} pts · solved ${count}/${CHALLENGES.length} · rank: ${rankTitle(solved)}`,
-      'success',
+    htmlLine(
+      `<span class="out-name">${score}</span><span class="muted">/${total} pts</span>  <span class="out-rule">${bar}</span>  solved <span class="line-success">${count}</span><span class="muted">/${CHALLENGES.length}</span>  ·  rank <span class="badge badge-ok">${escapeHtml(rankTitle(solved))}</span>`,
     ),
   ]
 }
@@ -31,22 +26,22 @@ function scoreboardLines(solved: string[]) {
 function listView(solved: string[]) {
   const solvedSet = new Set(solved)
   const rows = orderedChallenges().map((c) => {
-    const mark = solvedSet.has(c.id) ? '<span class="line-success">[✓]</span>' : '[ ]'
-    const meta = `<span class="muted">${DIFF_LABEL[c.difficulty] ?? c.difficulty} · ${c.category} · ${String(c.points).padStart(3)}pt</span>`
-    return htmlLine(`  ${mark} ${cmdLink(`ctf ${c.id}`, c.id.padEnd(20))} ${meta}`)
+    const done = solvedSet.has(c.id)
+    const mark = done ? '<span class="line-success">✓</span>' : '<span class="line-muted">○</span>'
+    const nameCls = done ? 'cmd-link out-name' : 'cmd-link'
+    const nameBtn = `<button type="button" class="${nameCls}" data-cmd="ctf ${escapeHtml(c.id)}">${escapeHtml(c.id.padEnd(20))}</button>`
+    const meta = `${badge(c.difficulty, c.difficulty as BadgeVariant)} ${badge(c.category, 'cat')} <span class="muted">${c.points}pt</span>`
+    return htmlLine(`  ${mark}  ${nameBtn}  ${meta}`)
   })
   return {
     lines: [
-      line('┌─ gods.dev CTF ──────────────────────────────────────┐', 'muted'),
-      line('│ capture the flags. they look like gods{...}.         │', 'muted'),
-      line('│ each one is hidden somewhere on this site.           │', 'muted'),
-      line('└─────────────────────────────────────────────────────┘', 'muted'),
+      htmlLine('<span class="out-head">gods.dev CTF</span> <span class="muted">— capture flags hidden across the site. they look like</span> <span class="badge badge-cat">gods{...}</span>'),
       line(''),
       ...scoreboardLines(solved),
       line(''),
       ...rows,
       line(''),
-      line('details: ctf <id>   ·   submit: flag submit gods{...}', 'muted'),
+      line('details  →  ctf <id>   ·   submit  →  flag submit gods{...}', 'muted'),
     ],
   }
 }
@@ -64,12 +59,12 @@ function detailView(id: string, solved: string[]) {
   const done = new Set(solved).has(c.id)
   const lines = [
     htmlLine(
-      `<span class="line-success">${escapeHtml(c.name)}</span>  <span class="muted">[${c.difficulty} · ${c.category} · ${c.points}pt]${done ? ' — ✓ captured' : ''}</span>`,
+      `<span class="out-name">${escapeHtml(c.name)}</span>  ${badge(c.difficulty, c.difficulty as BadgeVariant)} ${badge(c.category, 'cat')} <span class="muted">${c.points}pt</span>${done ? '  <span class="line-success">✓ captured</span>' : ''}`,
     ),
     line(''),
     ...c.prompt.split('\n').map((p) => line(p)),
     line(''),
-    line(`where: ${c.where}`, 'muted'),
+    htmlLine(`<span class="kv-key">where</span>  ${escapeHtml(c.where)}`),
   ]
   if (c.artifact) {
     lines.push(line(''))

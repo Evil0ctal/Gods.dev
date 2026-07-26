@@ -2,6 +2,22 @@
 
 :root { color-scheme: dark; }
 
+/* Shiki css-variables theme → mapped onto the site palette, so code
+   highlighting is theme-aware (recolours with `theme crt`, `amber`, ...) */
+:root {
+  --astro-code-foreground: var(--fg);
+  --astro-code-background: transparent;
+  --astro-code-token-comment: var(--fg-muted);
+  --astro-code-token-keyword: var(--accent-2);
+  --astro-code-token-string: var(--ok);
+  --astro-code-token-string-expression: var(--ok);
+  --astro-code-token-function: var(--accent);
+  --astro-code-token-constant: var(--warn);
+  --astro-code-token-parameter: var(--fg);
+  --astro-code-token-punctuation: color-mix(in srgb, var(--fg-muted) 80%, var(--fg));
+  --astro-code-token-link: var(--accent);
+}
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -36,6 +52,54 @@ a:hover, .term-link:hover { color: var(--accent-2); }
 .line-success { color: var(--ok); }
 .line-muted { color: var(--fg-muted); }
 .line-ascii { color: var(--accent-2); white-space: pre; }
+
+/* ── terminal output design language ─────────────────────────────── */
+.out-name { color: var(--accent-2); font-weight: 600; }
+.out-head { color: var(--accent); font-weight: 600; letter-spacing: 0.02em; }
+.out-head::before { content: '▸ '; color: var(--accent-2); }
+.out-rule { color: color-mix(in srgb, var(--fg-muted) 50%, transparent); }
+.kv-key { color: var(--fg-muted); }
+
+.badge, .chip {
+  display: inline-block;
+  font-size: 0.76em;
+  line-height: 1.35;
+  padding: 0.02em 0.5em;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fg-muted) 40%, transparent);
+  color: var(--fg-muted);
+  vertical-align: baseline;
+}
+.chip {
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  opacity: 0.85;
+}
+.badge-star {
+  color: var(--warn);
+  font-weight: 600;
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+}
+.badge-cat { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 45%, transparent); }
+.badge-tag { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.badge-intro { color: var(--fg-muted); }
+.badge-easy { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+.badge-medium { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 50%, transparent); }
+.badge-hard { color: var(--err); border-color: color-mix(in srgb, var(--err) 50%, transparent); }
+.badge-ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+.badge-warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 50%, transparent); }
+
+/* neofetch color-swatch row */
+.ne-dot-0 { color: var(--err); }
+.ne-dot-1 { color: var(--warn); }
+.ne-dot-2 { color: var(--ok); }
+.ne-dot-3 { color: var(--accent); }
+.ne-dot-4 { color: var(--accent-2); }
+.ne-dot-5 { color: var(--fg); }
+.ne-dot-6 { color: var(--fg-muted); }
+.ne-dot-7 { color: var(--accent); }
 
 /* terminal window chrome (homepage + blog frames) */
 .term-window {

@@ -54,45 +54,123 @@ const articleLd = {
 </BaseLayout>
 
 <style is:global>
-  .post h1 { font-size: 1.5rem; line-height: 1.3; }
-  .post h2 { font-size: 1.2rem; margin-top: 2rem; }
-  .post p, .post li { line-height: 1.75; }
-  .post pre {
-    padding: 1rem;
-    border-radius: 6px;
-    overflow-x: auto;
-    border: 1px solid color-mix(in srgb, var(--fg-muted) 30%, transparent);
-    position: relative;
+  .post { --prose-rule: color-mix(in srgb, var(--fg-muted) 25%, transparent); }
+  .post ::selection { background: var(--selection); }
+
+  .post h1 { font-size: 1.55rem; line-height: 1.22; letter-spacing: -0.01em; }
+  .post h2, .post h3 { line-height: 1.3; margin-top: 2.3rem; }
+  .post h2 {
+    font-size: 1.25rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--prose-rule);
   }
-  .post code { font-size: 0.9em; }
+  .post h2::before { content: '## '; color: var(--accent); font-weight: 700; }
+  .post h3 { font-size: 1.08rem; }
+  .post h3::before { content: '### '; color: var(--accent-2); font-weight: 700; }
+
+  .post p, .post li { line-height: 1.78; }
+  .post a { color: var(--accent); text-decoration: underline dotted; text-underline-offset: 3px; }
+  .post a:hover { color: var(--accent-2); }
+
+  .post ul { list-style: none; padding-left: 1.3rem; }
+  .post ul > li { position: relative; }
+  .post ul > li::before { content: '▸'; position: absolute; left: -1.25rem; color: var(--accent); }
+  .post ol { padding-left: 1.5rem; }
+  .post ol > li::marker { color: var(--accent-2); }
+
+  .post blockquote {
+    margin: 1.4rem 0;
+    padding: 0.55rem 1rem;
+    border-left: 3px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+    color: var(--fg-muted);
+    font-style: italic;
+  }
+  .post hr { border: none; border-top: 1px dashed var(--prose-rule); margin: 2.3rem 0; }
+
+  /* inline code chip */
   .post :not(pre) > code {
-    background: color-mix(in srgb, var(--fg-muted) 18%, transparent);
-    padding: 0.1em 0.35em;
+    font-size: 0.86em;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--fg-muted) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--fg-muted) 25%, transparent);
+    padding: 0.05em 0.4em;
     border-radius: 4px;
   }
-  .post blockquote { border-left: 3px solid var(--accent); margin-left: 0; padding-left: 1rem; color: var(--fg-muted); }
-  .post-nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
-  .copy-btn {
-    position: absolute; top: 0.4rem; right: 0.4rem;
-    background: var(--bg-elev); color: var(--fg-muted);
-    border: 1px solid color-mix(in srgb, var(--fg-muted) 40%, transparent);
-    border-radius: 4px; font: inherit; font-size: 0.72rem;
-    padding: 0.15rem 0.5rem; cursor: pointer;
+
+  /* code block = a nested terminal pane with a titlebar */
+  .post .code-block {
+    margin: 1.5rem 0;
+    border: 1px solid color-mix(in srgb, var(--fg-muted) 30%, transparent);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-elev);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
   }
-  .copy-btn:hover { color: var(--fg); }
+  .post .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.85rem;
+    background: color-mix(in srgb, var(--fg-muted) 12%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--fg-muted) 22%, transparent);
+    font-size: 0.74rem;
+    color: var(--fg-muted);
+  }
+  .post .code-lang { color: var(--accent); }
+  .post .code-lang::before { content: '◈ '; color: var(--accent-2); }
+  .post .code-block pre {
+    margin: 0;
+    padding: 0.95rem 1.1rem;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    overflow-x: auto;
+  }
+  .post code { font-size: 0.86em; }
+
+  .copy-btn {
+    background: transparent;
+    color: var(--fg-muted);
+    border: none;
+    font: inherit;
+    font-size: 0.74rem;
+    cursor: pointer;
+  }
+  .copy-btn:hover { color: var(--accent); }
+
+  /* tables */
+  .post table { border-collapse: collapse; width: 100%; margin: 1.5rem 0; font-size: 0.92em; }
+  .post th, .post td { border: 1px solid var(--prose-rule); padding: 0.4rem 0.75rem; text-align: left; }
+  .post th { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+  .post-nav { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 2rem; }
 </style>
 
 <script>
   for (const pre of document.querySelectorAll('article.post pre')) {
+    const code = pre.querySelector('code')
+    const fromClass = (code?.className || '').match(/language-(\w[\w+-]*)/)
+    const lang = pre.getAttribute('data-language') || (fromClass ? fromClass[1] : 'text')
+
+    const block = document.createElement('div')
+    block.className = 'code-block'
+    const head = document.createElement('div')
+    head.className = 'code-head'
+    const label = document.createElement('span')
+    label.className = 'code-lang'
+    label.textContent = lang
     const btn = document.createElement('button')
     btn.className = 'copy-btn'
     btn.type = 'button'
     btn.textContent = 'copy'
     btn.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(pre.querySelector('code')?.textContent ?? '')
+      await navigator.clipboard.writeText(code?.textContent ?? '')
       btn.textContent = 'copied!'
       setTimeout(() => (btn.textContent = 'copy'), 1500)
     })
-    pre.appendChild(btn)
+    head.append(label, btn)
+    pre.before(block)
+    block.append(head, pre)
   }
 </script>

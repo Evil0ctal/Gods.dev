@@ -1,7 +1,7 @@
 import type { Command } from '../core/types'
 import { SITE } from '../../../config/site'
 import { PROJECTS } from '../../../data/projects'
-import { aLink, escapeHtml, htmlLine, line } from '../core/utils'
+import { aLink, badge, escapeHtml, headLine, htmlLine, line, tagChips } from '../core/utils'
 
 export const aboutCmd: Command = {
   name: 'about',
@@ -10,19 +10,18 @@ export const aboutCmd: Command = {
   run() {
     return {
       lines: [
-        line(`${SITE.name} — security researcher & open-source developer.`),
-        line('I break things to understand them, then build tools so you can too.'),
-        line(SITE.tagline, 'muted'),
+        htmlLine(`<span class="out-name">${SITE.name}</span> — security researcher &amp; open-source developer.`),
+        line('  I break things to understand them, then build tools so you can too.', 'muted'),
+        line(`  ${SITE.tagline}`, 'muted'),
         line(''),
-        htmlLine(`Full story: ${aLink('/about/', 'gods.dev/about')}`),
+        htmlLine(`full story  →  ${aLink('/about/', 'gods.dev/about')}`),
       ],
     }
   },
 }
 
-function starBadge(n: number): string {
-  const s = n < 1000 ? String(n) : `${(n / 1000).toFixed(n < 10000 ? 1 : 0).replace(/\.0$/, '')}k`
-  return `<span class="line-success">★ ${s}</span>`
+function fmtStars(n: number): string {
+  return n < 1000 ? String(n) : `${(n / 1000).toFixed(n < 10000 ? 1 : 0).replace(/\.0$/, '')}k`
 }
 
 export const projectsCmd: Command = {
@@ -31,15 +30,20 @@ export const projectsCmd: Command = {
   category: 'content',
   run(_args, ctx) {
     const projects = ctx.projects.length > 0 ? ctx.projects : PROJECTS
-    const lines = projects.flatMap((p) => [
-      htmlLine(
-        `${aLink(p.url, p.name)}  ${typeof p.stars === 'number' ? starBadge(p.stars) + '  ' : ''}<span class="muted">[${p.tags.join(', ')}]</span>`,
-      ),
-      line(`  ${p.description}`, 'muted'),
-    ])
-    return {
-      lines: [...lines, htmlLine(`More: ${aLink('/projects/', 'gods.dev/projects')}`)],
+    const lines = [headLine('selected open-source work'), line('')]
+    for (const p of projects) {
+      const star = typeof p.stars === 'number' ? `  ${badge(`★ ${fmtStars(p.stars)}`, 'star')}` : ''
+      const chips = p.tags.length > 0 ? `  ${tagChips(p.tags)}` : ''
+      lines.push(
+        htmlLine(`<a class="term-link out-name" href="${escapeHtml(p.url)}">${escapeHtml(p.name)}</a>${star}${chips}`),
+      )
+      if (p.description) lines.push(line(`  ${p.description}`, 'muted'))
     }
+    lines.push(line(''))
+    lines.push(
+      htmlLine(`more  →  ${aLink('/projects/', 'gods.dev/projects')}  ·  ${aLink(SITE.github, 'github.com/Evil0ctal')}`),
+    )
+    return { lines }
   },
 }
 
@@ -48,11 +52,14 @@ export const contactCmd: Command = {
   description: 'reach the operator',
   category: 'intel',
   run() {
+    const row = (k: string, v: string) => htmlLine(`  <span class="kv-key">${k.padEnd(8)}</span>${v}`)
     return {
       lines: [
-        htmlLine(`GitHub  ${aLink(SITE.github, 'github.com/Evil0ctal')}`),
-        htmlLine(`Email   ${aLink(`mailto:${SITE.email}`, SITE.email)}`),
-        line('PGP     ask first. trust no one.', 'muted'),
+        headLine('reach the operator'),
+        line(''),
+        row('github', aLink(SITE.github, 'github.com/Evil0ctal')),
+        row('email', aLink(`mailto:${SITE.email}`, SITE.email)),
+        row('pgp', '<span class="line-muted">ask first. trust no one.</span>'),
       ],
     }
   },
@@ -75,14 +82,15 @@ export const studyCmd: Command = {
     }
     return {
       lines: [
-        line('Bible studies — rightly dividing the word:', 'muted'),
+        headLine('bible study — rightly dividing the word'),
+        line(''),
         ...ctx.studies.map((s) =>
           htmlLine(
-            `  ${escapeHtml(s.date)}  <a class="term-link" href="/study/${escapeHtml(s.slug)}/">${escapeHtml(s.slug)}</a> — ${escapeHtml(s.title)}`,
+            `  <span class="kv-key">${escapeHtml(s.date)}</span>  <a class="term-link out-name" href="/study/${escapeHtml(s.slug)}/">${escapeHtml(s.slug)}</a> — ${escapeHtml(s.title)}`,
           ),
         ),
         line(''),
-        line('Open one:  study read <slug>   ·   source text:  bible classics', 'muted'),
+        line('open one  →  study read <slug>   ·   source text  →  bible classics', 'muted'),
       ],
     }
   },
@@ -105,14 +113,15 @@ export const blogCmd: Command = {
     }
     return {
       lines: [
-        line('Latest transmissions:', 'muted'),
+        headLine('latest transmissions'),
+        line(''),
         ...ctx.posts.map((p) =>
           htmlLine(
-            `  ${escapeHtml(p.date)}  <a class="term-link" href="/blog/${escapeHtml(p.slug)}/">${escapeHtml(p.slug)}</a> — ${escapeHtml(p.title)}`,
+            `  <span class="kv-key">${escapeHtml(p.date)}</span>  <a class="term-link out-name" href="/blog/${escapeHtml(p.slug)}/">${escapeHtml(p.slug)}</a> — ${escapeHtml(p.title)}`,
           ),
         ),
         line(''),
-        line('Open one:  blog read <slug>', 'muted'),
+        line('open one  →  blog read <slug>', 'muted'),
       ],
     }
   },

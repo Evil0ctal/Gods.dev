@@ -153,13 +153,13 @@ describe('ctf command', () => {
     const res = await ctfCmd.run([], makeCtx())
     const text = res.lines.map((l) => l.text).join('\n')
     expect(text).toContain('gods.dev CTF')
-    expect(text).toContain('score: 0/')
+    expect(text).toContain('/825 pts')
     for (const c of CHALLENGES) expect(text).toContain(`ctf ${c.id}`)
   })
   it('marks solved challenges in the list', async () => {
     const res = await ctfCmd.run([], makeCtx({ ctf: makeMemoryCtf(['scroll-of-hermes']) }))
     const text = res.lines.map((l) => l.text).join('\n')
-    expect(text).toContain('[✓]')
+    expect(text).toContain('✓')
   })
   it('shows challenge detail with prompt and where-to-find', async () => {
     const res = await ctfCmd.run(['scroll-of-hermes'], makeCtx())
@@ -182,7 +182,7 @@ describe('ctf command', () => {
   })
   it('scoreboard subcommand summarizes progress', async () => {
     const res = await ctfCmd.run(['scoreboard'], makeCtx({ ctf: makeMemoryCtf(['scroll-of-hermes']) }))
-    expect(res.lines[0]?.text).toContain('75/')
+    expect(res.lines[0]?.text).toContain('>75</span>')
   })
   it('is registered under the ctf category', () => {
     expect(ctfCmd.category).toBe('ctf')
