@@ -95,6 +95,24 @@ test('terminal scrolls internally while the page height stays fixed', async ({ p
   expect(inner.atBottom).toBe(true)
 })
 
+test('bible command reads scripture from the terminal', async ({ page }) => {
+  await run(page, 'bible john 3:16')
+  await expect(page.locator('#term-output')).toContainText('John 3:16 · WEB')
+  await expect(page.locator('#term-output')).toContainText('For God so loved the world')
+})
+
+test('bible books lists the canon', async ({ page }) => {
+  await run(page, 'bible books')
+  await expect(page.locator('#term-output')).toContainText('Revelation')
+  await expect(page.locator('#term-output .cmd-link[data-cmd="bible matthew 1"]')).toBeVisible()
+})
+
+test('verse of the day is prerendered and executes on click', async ({ page }) => {
+  await expect(page.locator('#votd')).toBeVisible()
+  await page.locator('#votd .cmd-link').click()
+  await expect(page.locator('#term-output')).toContainText('· WEB')
+})
+
 test('unknown command suggests help', async ({ page }) => {
   await run(page, 'frobnicate')
   await expect(page.locator('#term-output')).toContainText('command not found')

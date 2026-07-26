@@ -1,4 +1,6 @@
 import type { PostMeta, TerminalContext } from './core/types'
+import type { BibleBook, BibleIndex } from './core/bible'
+import { extractVerses, pickDaily, refLabel } from './core/bible'
 import { createRegistry } from './core/registry'
 import { createHistory } from './core/history'
 import { createVfs } from './core/vfs-data'
@@ -9,6 +11,31 @@ import { createTerminalUi } from './ui/terminal-ui'
 import { startMatrixRain } from './ui/matrix-rain'
 import { listenKonami } from './ui/konami'
 import { printConsoleBanner } from './ui/console-banner'
+
+/** 预渲染的每日经文是构建当天的；挂载后刷新为访问者的今天（离线则保留原文） */
+async function refreshVotd(): Promise<void> {
+  const el = document.getElementById('votd')
+  if (!el) return
+  const today = new Date().toISOString().slice(0, 10)
+  if (el.dataset.date === today) return
+  try {
+    const idx = (await (await fetch('/bible/index.json')).json()) as BibleIndex
+    const ref = pickDaily(idx, today)
+    const book = (await (await fetch(`/bible/${ref.slug}.json`)).json()) as BibleBook
+    const verse = extractVerses(book, ref)?.[0]
+    if (!verse) return
+    const textEl = document.getElementById('votd-text')
+    const btn = el.querySelector<HTMLElement>('.cmd-link')
+    if (textEl) textEl.textContent = verse.text
+    if (btn) {
+      btn.textContent = refLabel(ref)
+      btn.dataset.cmd = `bible ${ref.slug} ${ref.chapter}:${ref.verseStart}`
+    }
+    el.dataset.date = today
+  } catch {
+    // offline: the build-day verse stands
+  }
+}
 
 /** 让移动端浏览器的状态栏配色跟随当前主题背景色 */
 function syncThemeColor(): void {
@@ -59,6 +86,7 @@ export function mountTerminal(): void {
   })
   void ui.start()
   syncThemeColor()
+  void refreshVotd()
   printConsoleBanner()
   listenKonami(() => startMatrixRain())
 }

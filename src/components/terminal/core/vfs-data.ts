@@ -36,6 +36,21 @@ export function createVfs(posts: PostMeta[]): VfsDir {
             type: 'dir',
             children: {
               'README.txt': { type: 'file', content: README },
+              bible: {
+                type: 'dir',
+                children: {
+                  'README.txt': {
+                    type: 'file',
+                    content: `the word is not stored in files. it is spoken.
+
+  bible john 3:16     a verse
+  bible books         the whole canon
+  bible               today's verse
+
+(World English Bible — public domain. even the gods respect licensing.)`,
+                  },
+                },
+              },
               blog: { type: 'dir', children: blogChildren },
               '.secrets': {
                 type: 'dir',

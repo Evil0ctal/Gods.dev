@@ -6,13 +6,14 @@ import { aboutCmd, projectsCmd, contactCmd, blogCmd } from './content'
 import { themeCmd } from './theme'
 import { neofetchCmd } from './neofetch'
 import { flagCmd } from './flag'
+import { bibleCmd } from './bible'
 import { sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd } from './eggs'
 
 export function registerAll(reg: CommandRegistry): void {
   const commands = [
     helpCmd, aboutCmd, whoamiCmd, blogCmd, projectsCmd, contactCmd,
     themeCmd, neofetchCmd, clearCmd, historyCmd, echoCmd, dateCmd,
-    lsCmd, cdCmd, catCmd,
+    lsCmd, cdCmd, catCmd, bibleCmd,
     flagCmd, sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd,
     { ...contactCmd, name: 'social', hidden: true },
   ]

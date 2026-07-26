@@ -1,7 +1,10 @@
 ---
+import { readFileSync } from 'node:fs'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { getCollection } from 'astro:content'
 import { SITE } from '../config/site'
+import { extractVerses, pickDaily, refLabel } from '../components/terminal/core/bible'
+import type { BibleBook, BibleIndex } from '../components/terminal/core/bible'
 
 const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true)))
   .map((p) => ({
@@ -11,6 +14,21 @@ const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ?
     date: p.data.pubDate.toISOString().slice(0, 10),
   }))
   .sort((a, b) => b.date.localeCompare(a.date))
+
+// verse of the day: prerendered at build time (crawlable), refreshed to
+// the current day client-side after the terminal mounts
+const bibleIndex = JSON.parse(readFileSync('public/bible/index.json', 'utf8')) as BibleIndex
+const votdDate = new Date().toISOString().slice(0, 10)
+let votdRef = pickDaily(bibleIndex, votdDate)
+let votdBook = JSON.parse(readFileSync(`public/bible/${votdRef.slug}.json`, 'utf8')) as BibleBook
+let votdVerse = extractVerses(votdBook, votdRef)?.[0]
+if (!votdVerse) {
+  // rare: the daily pick landed on a verse omitted by the WEB translation
+  votdRef = { slug: 'john', name: 'John', chapter: 3, verseStart: 16 }
+  votdBook = JSON.parse(readFileSync('public/bible/john.json', 'utf8')) as BibleBook
+  votdVerse = extractVerses(votdBook, votdRef)![0]!
+}
+const votdCmd = `bible ${votdRef.slug} ${votdRef.chapter}:${votdRef.verseStart}`
 
 const personLd = {
   '@context': 'https://schema.org',
@@ -53,6 +71,10 @@ const personLd = {
  ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝╚═╝╚═════╝ ╚══════╝  ╚═══╝`}</pre>
           <h1>{SITE.name} <span class="muted">@ gods.dev</span></h1>
           <p>{SITE.description}</p>
+          <p id="votd" class="muted" data-date={votdDate}>
+            ✝ “<span id="votd-text">{votdVerse.text}</span>” —
+            <button type="button" class="cmd-link" data-cmd={votdCmd}>{refLabel(votdRef)}</button>
+          </p>
           <p class="muted">
             Type <button type="button" class="cmd-link" data-cmd="help">help</button> to begin.
             Mouse users: commands are clickable. Keyboard users: you already know what to do.

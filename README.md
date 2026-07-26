@@ -11,6 +11,8 @@ like a shell, and hides more than it shows.
 ## What's inside
 
 - 🖥️ Interactive terminal homepage — type `help`, or click your way around
+- ✝️ The whole New Testament in your terminal — `bible john 3:16`, `bible random`,
+  plus a verse of the day on the homepage (World English Bible, public domain)
 - 📝 Markdown blog with an `ls -la` aesthetic
 - 🎨 Four switchable themes (`theme crt` for the 1978 experience)
 - 🥚 Easter eggs. Everywhere. `view-source` is a feature, not a bug
