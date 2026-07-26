@@ -46,7 +46,7 @@ function listView(solved: string[]) {
       line(''),
       ...rows,
       line(''),
-      htmlLine(`details: ${cmdLink('ctf <id>', 'ctf &lt;id&gt;')}  ·  submit: flag submit gods{...}`),
+      line('details: ctf <id>   ·   submit: flag submit gods{...}', 'muted'),
     ],
   }
 }
