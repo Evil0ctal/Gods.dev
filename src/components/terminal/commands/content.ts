@@ -1,7 +1,7 @@
 import type { Command } from '../core/types'
 import { SITE } from '../../../config/site'
 import { PROJECTS } from '../../../data/projects'
-import { aLink, htmlLine, line } from '../core/utils'
+import { aLink, escapeHtml, htmlLine, line } from '../core/utils'
 
 export const aboutCmd: Command = {
   name: 'about',
@@ -65,7 +65,9 @@ export const blogCmd: Command = {
       lines: [
         line('Latest transmissions:', 'muted'),
         ...ctx.posts.map((p) =>
-          htmlLine(`  ${p.date}  <a class="term-link" href="/blog/${p.slug}/">${p.slug}</a> — ${p.title}`),
+          htmlLine(
+            `  ${escapeHtml(p.date)}  <a class="term-link" href="/blog/${escapeHtml(p.slug)}/">${escapeHtml(p.slug)}</a> — ${escapeHtml(p.title)}`,
+          ),
         ),
         line(''),
         line('Open one:  blog read <slug>', 'muted'),

@@ -26,7 +26,7 @@ test('help lists commands and hides easter eggs', async ({ page }) => {
 
 test('clicking a command link executes it', async ({ page }) => {
   await run(page, 'help')
-  await page.locator('.cmd-link[data-cmd="neofetch"]').first().click()
+  await page.locator('#term-output .cmd-link[data-cmd="neofetch"]').first().click()
   await expect(page.locator('#term-output')).toContainText('gods.dev 1.0 (Olympus)')
 })
 

@@ -17,6 +17,7 @@ for (const p of posts) {
 
 <BaseLayout title={`blog — ${SITE.title}`} description={`Articles by ${SITE.name}: security research, reverse engineering, web tooling, and the occasional prank.`}>
   <TerminalWindow title="guest@gods.dev: ~/blog">
+    <h1>~/blog</h1>
     <p class="muted">$ ls -la ~/blog  <span aria-hidden="true">— {posts.length} article(s), 0 regrets</span></p>
     {[...byYear.entries()].map(([year, yearPosts]) => (
       <section>

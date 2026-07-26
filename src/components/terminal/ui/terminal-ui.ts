@@ -127,7 +127,12 @@ export function createTerminalUi(opts: TerminalUiOptions) {
   async function start(): Promise<void> {
     const motd = output.querySelector<HTMLElement>('#motd')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const seen = localStorage.getItem('gods:booted') === '1'
+    let seen = false
+    try {
+      seen = localStorage.getItem('gods:booted') === '1'
+    } catch {
+      seen = false
+    }
     let skipped = reduced || seen
     const skipNow = () => skipped
     const onSkip = () => (skipped = true)
@@ -140,7 +145,11 @@ export function createTerminalUi(opts: TerminalUiOptions) {
       window.removeEventListener('keydown', onSkip)
       window.removeEventListener('pointerdown', onSkip)
       if (motd) output.appendChild(motd)
-      localStorage.setItem('gods:booted', '1')
+      try {
+        localStorage.setItem('gods:booted', '1')
+      } catch {
+        // ignore — privacy mode / storage disabled
+      }
     }
 
     refreshPrompt()
