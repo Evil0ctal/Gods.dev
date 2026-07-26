@@ -18,10 +18,20 @@ describe('about', () => {
 })
 
 describe('projects', () => {
-  it('lists projects with links', async () => {
+  it('falls back to the static list when ctx has no projects', async () => {
     const text = (await projectsCmd.run([], makeCtx())).lines.map((l) => l.text).join('\n')
     expect(text).toContain('Douyin_TikTok_Download_API')
-    expect(text).toContain('github.com/Evil0ctal')
+    expect(text).toContain('/projects/')
+  })
+  it('renders live GitHub projects with star badges when provided', async () => {
+    const projects = [
+      { name: 'RepoA', description: 'desc a', url: 'https://github.com/Evil0ctal/RepoA', tags: ['python'], stars: 18979 },
+      { name: 'RepoB', description: 'desc b', url: 'https://github.com/Evil0ctal/RepoB', tags: ['go'], stars: 470 },
+    ]
+    const text = (await projectsCmd.run([], makeCtx({ projects }))).lines.map((l) => l.text).join('\n')
+    expect(text).toContain('RepoA')
+    expect(text).toContain('★ 19k')
+    expect(text).toContain('★ 470')
   })
 })
 

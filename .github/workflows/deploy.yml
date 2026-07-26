@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  # keep the projects list fresh with GitHub star counts even without a push
+  schedule:
+    - cron: '0 6 * * 1' # every Monday 06:00 UTC
 
 permissions:
   contents: read
@@ -32,6 +35,10 @@ jobs:
     needs: test
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    # the built-in token lifts the GitHub API rate limit (60/hr -> 5000/hr)
+    # so the projects list bakes reliably at build time
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: withastro/action@v3

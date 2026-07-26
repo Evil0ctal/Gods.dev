@@ -26,6 +26,10 @@ export interface ProjectMeta {
   description: string
   url: string
   tags: string[]
+  /** live GitHub metadata, present when sourced from the API at build time */
+  stars?: number
+  language?: string | null
+  updated?: string // YYYY-MM-DD
 }
 
 export interface VfsFile { type: 'file'; content: string }
@@ -47,6 +51,7 @@ export interface TerminalContext {
   vfs: VfsDir
   posts: PostMeta[]
   studies: PostMeta[]
+  projects: ProjectMeta[]
   ctf: CtfStore
   registry: CommandRegistry
   historyList(): string[]

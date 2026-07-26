@@ -2,29 +2,49 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import TerminalWindow from '../components/TerminalWindow.astro'
 import { SITE } from '../config/site'
-import { PROJECTS } from '../data/projects'
+import { getProjects, formatStars } from '../lib/github'
+
+// baked at build time from the GitHub API (falls back to a static list)
+const projects = await getProjects()
+const live = projects.some((p) => typeof p.stars === 'number')
 ---
 
-<BaseLayout title={`projects — ${SITE.title}`} description={`Selected open-source projects by ${SITE.name}.`}>
+<BaseLayout title={`projects — ${SITE.title}`} description={`Selected open-source projects by ${SITE.name}, ranked by stars — pulled live from GitHub at build time.`}>
   <TerminalWindow title="guest@gods.dev: ~/projects">
-    <p class="muted">$ ls -la ~/projects</p>
+    <p class="muted">$ gh repo list {SITE.name} --sort stars {live ? '' : '(cached)'}</p>
     <h1>Projects</h1>
     <ul class="projects">
-      {PROJECTS.map((p) => (
+      {projects.map((p) => (
         <li>
-          <h2><a class="term-link" href={p.url}>{p.name}</a></h2>
-          <p>{p.description}</p>
-          <p class="muted">[{p.tags.join(', ')}]</p>
+          <h2>
+            <a class="term-link" href={p.url}>{p.name}</a>
+            {typeof p.stars === 'number' && <span class="stars" title={`${p.stars} stars`}>★ {formatStars(p.stars)}</span>}
+            {p.language && <span class="muted lang">· {p.language}</span>}
+          </h2>
+          {p.description && <p>{p.description}</p>}
+          {p.tags.length > 0 && <p class="muted tags">[{p.tags.join(', ')}]</p>}
         </li>
       ))}
     </ul>
-    <p class="muted">Everything else: <a class="term-link" href={SITE.github}>github.com/Evil0ctal</a></p>
+    <p class="muted">All {' '}
+      <a class="term-link" href={`${SITE.github}?tab=repositories&sort=stargazers`}>60+ repositories on GitHub</a>.
+    </p>
   </TerminalWindow>
 </BaseLayout>
 
 <style>
   .projects { list-style: none; padding: 0; }
   .projects li { margin-bottom: 1.6rem; }
-  .projects h2 { margin-bottom: 0.2rem; font-size: 1.05rem; }
+  .projects h2 {
+    margin-bottom: 0.2rem;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .stars { color: var(--warn); font-size: 0.9rem; }
+  .lang { font-size: 0.85rem; }
+  .tags { font-size: 0.85rem; }
   h1 { font-size: 1.3rem; }
 </style>

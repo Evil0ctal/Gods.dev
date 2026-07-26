@@ -20,13 +20,21 @@ export const aboutCmd: Command = {
   },
 }
 
+function starBadge(n: number): string {
+  const s = n < 1000 ? String(n) : `${(n / 1000).toFixed(n < 10000 ? 1 : 0).replace(/\.0$/, '')}k`
+  return `<span class="line-success">★ ${s}</span>`
+}
+
 export const projectsCmd: Command = {
   name: 'projects',
   description: 'selected open-source work',
   category: 'content',
-  run() {
-    const lines = PROJECTS.flatMap((p) => [
-      htmlLine(`${aLink(p.url, p.name)}  <span class="muted">[${p.tags.join(', ')}]</span>`),
+  run(_args, ctx) {
+    const projects = ctx.projects.length > 0 ? ctx.projects : PROJECTS
+    const lines = projects.flatMap((p) => [
+      htmlLine(
+        `${aLink(p.url, p.name)}  ${typeof p.stars === 'number' ? starBadge(p.stars) + '  ' : ''}<span class="muted">[${p.tags.join(', ')}]</span>`,
+      ),
       line(`  ${p.description}`, 'muted'),
     ])
     return {

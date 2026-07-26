@@ -7,6 +7,8 @@ test('about and projects render with seo meta', async ({ page }) => {
 
   await page.goto('/projects/')
   await expect(page.locator('.projects h2').first()).toBeVisible()
+  // projects link to real GitHub repos (baked from the API, or the fallback list)
+  await expect(page.locator('.projects a[href*="github.com/Evil0ctal/"]').first()).toBeVisible()
 })
 
 test('admin bait page taunts and is noindexed', async ({ page }) => {

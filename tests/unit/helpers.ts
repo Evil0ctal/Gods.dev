@@ -24,6 +24,7 @@ export function makeCtx(overrides: Partial<TerminalContext> = {}): TerminalConte
     vfs: emptyVfs,
     posts: [],
     studies: [],
+    projects: [],
     ctf: makeMemoryCtf(),
     registry: createRegistry(),
     historyList: () => [],
