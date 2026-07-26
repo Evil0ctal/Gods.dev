@@ -29,6 +29,17 @@ npm run build      # static output in dist/
 Blog posts live in `src/content/blog/*.md` — add a file, push, done.
 `draft: true` keeps a post local.
 
+## Docker
+
+Run the production build locally in a container (multi-stage: Node build → nginx):
+
+```bash
+docker build -t gods-dev .
+docker run --rm -d -p 8811:80 --name gods-dev gods-dev
+# http://localhost:8811 — nginx serves dist/ with GitHub-Pages-style 404 handling
+docker stop gods-dev
+```
+
 ## Deploying
 
 Pushes to `main` run tests, build, and deploy to GitHub Pages via Actions.

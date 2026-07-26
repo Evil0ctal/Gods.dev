@@ -1,0 +1,16 @@
+node_modules
+dist
+.astro
+.git
+.github
+.claude
+.superpowers
+.idea
+coverage
+playwright-report
+test-results
+docs
+e2e
+tests
+*.log
+.DS_Store
