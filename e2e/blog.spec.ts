@@ -2,7 +2,13 @@ import { test, expect } from '@playwright/test'
 
 test('blog index lists published posts, newest first', async ({ page }) => {
   await page.goto('/blog/')
-  await expect(page.locator('.post-list a').first()).toContainText('terminal that pretends')
+  const times = await page
+    .locator('.post-list time')
+    .evaluateAll((els) => els.map((e) => e.getAttribute('datetime') ?? ''))
+  expect(times.length).toBeGreaterThan(1)
+  // dates are listed in descending (newest-first) order
+  expect(times).toEqual([...times].sort().reverse())
+  await expect(page.locator('.post-list')).toContainText('Building gods.dev')
 })
 
 test('draft posts are excluded from the production build', async ({ page }) => {
