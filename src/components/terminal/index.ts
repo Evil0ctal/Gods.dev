@@ -1,6 +1,6 @@
 import type { PostMeta, TerminalContext } from './core/types'
 import type { BibleBook, BibleIndex } from './core/bible'
-import { extractVerses, pickDaily, refLabel } from './core/bible'
+import { extractVerses, pickRandom, refLabel } from './core/bible'
 import { createRegistry } from './core/registry'
 import { createHistory } from './core/history'
 import { createVfs } from './core/vfs-data'
@@ -12,28 +12,31 @@ import { startMatrixRain } from './ui/matrix-rain'
 import { listenKonami } from './ui/konami'
 import { printConsoleBanner } from './ui/console-banner'
 
-/** 预渲染的每日经文是构建当天的；挂载后刷新为访问者的今天（离线则保留原文） */
+/** 预渲染的经文是构建期的静态兜底（SEO/无 JS 可见）；
+    每次打开或刷新页面，挂载后立刻换成一句随机经文（离线则保留原文） */
 async function refreshVotd(): Promise<void> {
   const el = document.getElementById('votd')
   if (!el) return
-  const today = new Date().toISOString().slice(0, 10)
-  if (el.dataset.date === today) return
   try {
     const idx = (await (await fetch('/bible/index.json')).json()) as BibleIndex
-    const ref = pickDaily(idx, today)
-    const book = (await (await fetch(`/bible/${ref.slug}.json`)).json()) as BibleBook
-    const verse = extractVerses(book, ref)?.[0]
-    if (!verse) return
-    const textEl = document.getElementById('votd-text')
-    const btn = el.querySelector<HTMLElement>('.cmd-link')
-    if (textEl) textEl.textContent = verse.text
-    if (btn) {
-      btn.textContent = refLabel(ref)
-      btn.dataset.cmd = `bible ${ref.slug} ${ref.chapter}:${ref.verseStart}`
+    // 个别节码在 WEB 译本中缺省为空，抽中就再抽
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const ref = pickRandom(idx)
+      const book = (await (await fetch(`/bible/${ref.slug}.json`)).json()) as BibleBook
+      const verse = extractVerses(book, ref)?.[0]
+      if (!verse) continue
+      const textEl = document.getElementById('votd-text')
+      const btn = el.querySelector<HTMLElement>('.cmd-link')
+      if (textEl) textEl.textContent = verse.text
+      if (btn) {
+        btn.textContent = refLabel(ref)
+        btn.dataset.cmd = `bible ${ref.slug} ${ref.chapter}:${ref.verseStart}`
+      }
+      el.dataset.random = '1'
+      return
     }
-    el.dataset.date = today
   } catch {
-    // offline: the build-day verse stands
+    // offline: the build-time verse stands
   }
 }
 

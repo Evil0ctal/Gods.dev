@@ -107,8 +107,17 @@ test('bible books lists the canon', async ({ page }) => {
   await expect(page.locator('#term-output .cmd-link[data-cmd="bible matthew 1"]')).toBeVisible()
 })
 
-test('verse of the day is prerendered and executes on click', async ({ page }) => {
+test('a random verse loads on every visit and executes on click', async ({ page }) => {
   await expect(page.locator('#votd')).toBeVisible()
+  await expect(page.locator('#votd[data-random="1"]')).toBeAttached()
+  const first = await page.locator('#votd-text').textContent()
+  await page.reload()
+  await expect(page.locator('#votd[data-random="1"]')).toBeAttached()
+  const second = await page.locator('#votd-text').textContent()
+  expect(first).toBeTruthy()
+  expect(second).toBeTruthy()
+  // ~7900 節可选，两次连续加载撞同一节的概率可忽略（CI 有重试兜底）
+  expect(second).not.toBe(first)
   await page.locator('#votd .cmd-link').click()
   await expect(page.locator('#term-output')).toContainText('· WEB')
 })
