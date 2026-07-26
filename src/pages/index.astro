@@ -129,6 +129,16 @@ const personLd = {
     flex: none;
     padding: 0.5rem 1rem;
   }
+  /* homepage IS the terminal — hide the footer nav here (kept in the DOM,
+     visually clipped, so crawlers and the skip-link still reach it) */
+  body:has(#terminal) .site-footer nav {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 </style>
 
 <style>

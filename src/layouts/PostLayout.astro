@@ -45,7 +45,10 @@ const articleLd = {
         {passage && <p class="muted passage">✝ Passage: <strong>{passage}</strong></p>}
       </header>
       <slot />
-      <p><a class="term-link" href={`/${basePath}/`}>cd ..</a></p>
+      <p class="post-nav">
+        <a class="term-link" href={`/${basePath}/`}>cd ..</a>
+        <a class="term-link" href="/">cd ~ (back to terminal)</a>
+      </p>
     </article>
   </TerminalWindow>
 </BaseLayout>
@@ -68,6 +71,7 @@ const articleLd = {
     border-radius: 4px;
   }
   .post blockquote { border-left: 3px solid var(--accent); margin-left: 0; padding-left: 1rem; color: var(--fg-muted); }
+  .post-nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
   .copy-btn {
     position: absolute; top: 0.4rem; right: 0.4rem;
     background: var(--bg-elev); color: var(--fg-muted);

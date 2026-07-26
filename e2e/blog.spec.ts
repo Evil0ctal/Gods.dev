@@ -12,6 +12,17 @@ test('draft posts are excluded from the production build', async ({ page }) => {
   expect(res.status()).toBe(404)
 })
 
+test('inner pages offer a visible way back to the terminal', async ({ page }) => {
+  await page.goto('/blog/building-gods-dev/')
+  // footer nav is visible on inner pages and links home
+  const homeNav = page.locator('footer nav a[href="/"]')
+  await expect(homeNav).toBeVisible()
+  const box = await page.locator('footer nav').boundingBox()
+  expect(box?.width ?? 0).toBeGreaterThan(1)
+  // and the in-article "cd ~" shortcut points to the terminal
+  await expect(page.locator('.post-nav a[href="/"]')).toBeVisible()
+})
+
 test('post page has terminal chrome, code copy button and jsonld', async ({ page }) => {
   await page.goto('/blog/building-gods-dev/')
   await expect(page.locator('.term-titlebar .title')).toContainText('~/blog/building-gods-dev.md')
