@@ -94,7 +94,7 @@ export function createTerminalUi(opts: TerminalUiOptions) {
       return
     }
     await runResult(await cmd.run(parsed.args, opts.ctx))
-    refreshPrompt()
+    if (!vimMode) refreshPrompt()
   }
 
   function onKeydown(e: KeyboardEvent): void {
