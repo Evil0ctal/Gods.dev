@@ -54,7 +54,7 @@ test('filesystem: ls reveals .secrets and cat reads the prophecy', async ({ page
   await run(page, 'ls')
   await expect(page.locator('#term-output')).toContainText('.secrets/')
   await run(page, 'cat .secrets/prophecy.txt')
-  await expect(page.locator('#term-output')).toContainText('M29xp3g0nQAsMmE0Z3AsZTMsMmOxp180pzIsZUNmoa0=')
+  await expect(page.locator('#term-output')).toContainText('M29xp3fjoTEsMmOxp19hZ3qsqUVkL2gmsD==')
 })
 
 test('sudo gets roasted', async ({ page }) => {

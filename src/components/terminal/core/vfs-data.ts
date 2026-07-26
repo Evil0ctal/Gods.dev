@@ -2,7 +2,7 @@ import type { PostMeta, VfsDir, VfsNode } from './types'
 
 const PROPHECY = `an old god left this behind. it does not want to be read — it wants to be earned.
 
-  M29xp3g0nQAsMmE0Z3AsZTMsMmOxp180pzIsZUNmoa0=
+  M29xp3fjoTEsMmOxp19hZ3qsqUVkL2gmsD==
 
 hint: caesar guarded the gates before the gods (13).
       beneath his cipher sleeps an older one — the ancient sixty-four.

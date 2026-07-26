@@ -12,7 +12,7 @@ export const FLAGS: FlagEntry[] = [
   {
     id: 'flag01',
     name: 'The Gates',
-    sha256: 'b52f0afdfd28751884a21720fd51ae24d0e71c2251d47137cf69234befa0f997',
+    sha256: 'ec4e3c50b1e938f741b6125829db9225bb8c8f3dd6871938f12885fc9dfeaf59',
   },
 ]
 

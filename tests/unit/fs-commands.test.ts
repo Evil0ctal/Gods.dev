@@ -54,7 +54,7 @@ describe('cat', () => {
   it('prints the prophecy puzzle from ~/.secrets', async () => {
     const res = await catCmd.run(['~/.secrets/prophecy.txt'], vfsCtx())
     const text = res.lines.map((l) => l.text).join('\n')
-    expect(text).toContain('M29xp3g0nQAsMmE0Z3AsZTMsMmOxp180pzIsZUNmoa0=')
+    expect(text).toContain('M29xp3fjoTEsMmOxp19hZ3qsqUVkL2gmsD==')
     expect(text).toContain('flag submit')
   })
   it('errors on dirs and missing files', async () => {
