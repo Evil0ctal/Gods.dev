@@ -1,0 +1,14 @@
+# ──────────────────────────────────────────────
+#  gods.dev robots.txt
+#  hello, crawler. or human. mostly human, i bet —
+#  crawlers never read the comments.
+#
+#  since you're here: not every path is listed
+#  where machines can see it. the terminal knows more.
+# ──────────────────────────────────────────────
+
+User-agent: *
+Disallow: /admin/
+Allow: /
+
+Sitemap: https://gods.dev/sitemap-index.xml
