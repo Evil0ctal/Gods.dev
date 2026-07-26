@@ -15,6 +15,15 @@ const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ?
   }))
   .sort((a, b) => b.date.localeCompare(a.date))
 
+const studies = (await getCollection('study', ({ data }) => (import.meta.env.PROD ? !data.draft : true)))
+  .map((s) => ({
+    slug: s.id,
+    title: s.data.title,
+    description: s.data.description,
+    date: s.data.pubDate.toISOString().slice(0, 10),
+  }))
+  .sort((a, b) => b.date.localeCompare(a.date))
+
 // verse of the day: prerendered at build time (crawlable), refreshed to
 // the current day client-side after the terminal mounts
 const bibleIndex = JSON.parse(readFileSync('public/bible/index.json', 'utf8')) as BibleIndex
@@ -95,7 +104,7 @@ const personLd = {
       </div>
     </div>
   </main>
-  <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts }).replaceAll('<', '\u003c')} />
+  <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts, studies }).replaceAll('<', '\u003c')} />
   <script>
     import { mountTerminal } from '../components/terminal/index'
     mountTerminal()

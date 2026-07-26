@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import TerminalWindow from '../../components/TerminalWindow.astro'
+import { getCollection } from 'astro:content'
+import { SITE } from '../../config/site'
+
+const studies = (await getCollection('study', ({ data }) => (import.meta.env.PROD ? !data.draft : true)))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+---
+
+<BaseLayout
+  title={`bible study — ${SITE.title}`}
+  description="Bible studies on the New Testament: close readings of classic passages — parables, the Sermon on the Mount, Paul's letters — with questions for reflection."
+>
+  <TerminalWindow title="guest@gods.dev: ~/study">
+    <h1>~/study</h1>
+    <p class="muted">$ ls -la ~/study <span aria-hidden="true">— rightly dividing the word, one passage at a time</span></p>
+    <ul class="study-list">
+      {studies.map((s) => (
+        <li>
+          <span class="muted" aria-hidden="true">-rw-r--r--</span>
+          <time datetime={s.data.pubDate.toISOString().slice(0, 10)} class="muted">
+            {s.data.pubDate.toISOString().slice(0, 10)}
+          </time>
+          <div>
+            <a class="term-link" href={`/study/${s.id}/`}>{s.data.title}</a>
+            <p class="muted passage-line">✝ {s.data.passage} — {s.data.description}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+    {studies.length === 0 && <p class="muted">No studies yet. The word endures; the notes are coming.</p>}
+    <p class="muted">
+      Read the source text in the <a class="term-link" href="/">terminal</a>: try
+      <code>bible classics</code> or <code>bible john 3:16</code>.
+    </p>
+  </TerminalWindow>
+</BaseLayout>
+
+<style>
+  .study-list { list-style: none; padding: 0; }
+  .study-list li { display: flex; gap: 1rem; padding: 0.45rem 0; flex-wrap: wrap; }
+  .passage-line { margin: 0.15rem 0 0; font-size: 0.85rem; }
+  h1 { font-size: 1.3rem; }
+</style>

@@ -46,6 +46,7 @@ export interface TerminalContext {
   setTheme(theme: string): boolean
   vfs: VfsDir
   posts: PostMeta[]
+  studies: PostMeta[]
   registry: CommandRegistry
   historyList(): string[]
 }

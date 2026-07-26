@@ -11,9 +11,13 @@ interface Props {
   updatedDate?: Date
   tags: string[]
   ogImage?: string
+  /** 所属区块：blog（默认）或 study —— 决定标题栏路径、返回链接与 JSON-LD url */
+  basePath?: 'blog' | 'study'
+  /** study 文章研读的经文段落，如 'Luke 15:11-32' */
+  passage?: string
 }
 
-const { slug, title, description, pubDate, updatedDate, tags, ogImage } = Astro.props
+const { slug, title, description, pubDate, updatedDate, tags, ogImage, basePath = 'blog', passage } = Astro.props
 const iso = (d: Date) => d.toISOString().slice(0, 10)
 
 const articleLd = {
@@ -23,13 +27,13 @@ const articleLd = {
   description,
   datePublished: pubDate.toISOString(),
   ...(updatedDate && { dateModified: updatedDate.toISOString() }),
-  url: `${SITE.url}/blog/${slug}/`,
+  url: `${SITE.url}/${basePath}/${slug}/`,
   author: { '@type': 'Person', name: SITE.name, url: SITE.url },
 }
 ---
 
 <BaseLayout title={`${title} — ${SITE.title}`} description={description} type="article" jsonLd={articleLd} ogImage={ogImage}>
-  <TerminalWindow title={`~/blog/${slug}.md`}>
+  <TerminalWindow title={`~/${basePath}/${slug}.md`}>
     <article class="post">
       <header>
         <h1>{title}</h1>
@@ -38,9 +42,10 @@ const articleLd = {
           {updatedDate && <> · updated <time datetime={iso(updatedDate)}>{iso(updatedDate)}</time></>}
           {tags.length > 0 && <> · {tags.map((t) => `#${t}`).join(' ')}</>}
         </p>
+        {passage && <p class="muted passage">✝ Passage: <strong>{passage}</strong></p>}
       </header>
       <slot />
-      <p><a class="term-link" href="/blog/">cd ..</a></p>
+      <p><a class="term-link" href={`/${basePath}/`}>cd ..</a></p>
     </article>
   </TerminalWindow>
 </BaseLayout>

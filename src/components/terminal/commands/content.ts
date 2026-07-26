@@ -50,6 +50,36 @@ export const contactCmd: Command = {
   },
 }
 
+export const studyCmd: Command = {
+  name: 'study',
+  description: 'bible study notes',
+  usage: 'study [read <slug>]',
+  category: 'scripture',
+  run(args, ctx) {
+    if (args[0] === 'read') {
+      const slug = args[1]
+      const s = ctx.studies.find((p) => p.slug === slug)
+      if (!s) return { lines: [line(`study: no such study: ${slug ?? ''}`, 'error')] }
+      return { lines: [line(`opening ~/study/${s.slug}.md ...`, 'muted')], navigate: `/study/${s.slug}/` }
+    }
+    if (ctx.studies.length === 0) {
+      return { lines: [line('No studies yet. The word endures; the notes are coming.', 'muted')] }
+    }
+    return {
+      lines: [
+        line('Bible studies — rightly dividing the word:', 'muted'),
+        ...ctx.studies.map((s) =>
+          htmlLine(
+            `  ${escapeHtml(s.date)}  <a class="term-link" href="/study/${escapeHtml(s.slug)}/">${escapeHtml(s.slug)}</a> — ${escapeHtml(s.title)}`,
+          ),
+        ),
+        line(''),
+        line('Open one:  study read <slug>   ·   source text:  bible classics', 'muted'),
+      ],
+    }
+  },
+}
+
 export const blogCmd: Command = {
   name: 'blog',
   description: 'read the blog',

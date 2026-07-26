@@ -113,6 +113,23 @@ test('verse of the day is prerendered and executes on click', async ({ page }) =
   await expect(page.locator('#term-output')).toContainText('· WEB')
 })
 
+test('bible classics lists clickable passages that read scripture', async ({ page }) => {
+  await run(page, 'bible classics')
+  await expect(page.locator('#term-output')).toContainText('The Prodigal Son')
+  await page.locator('#term-output .cmd-link[data-cmd="bible luke 15:11-32"]').click()
+  await expect(page.locator('#term-output')).toContainText('Luke 15:11-32 · WEB')
+  await expect(page.locator('#term-output')).toContainText('A certain man had two sons')
+})
+
+test('study command lists notes and navigates to an article', async ({ page }) => {
+  await run(page, 'study')
+  await expect(page.locator('#term-output')).toContainText('the-prodigal-son')
+  await run(page, 'study read the-prodigal-son')
+  await page.waitForURL('**/study/the-prodigal-son/')
+  await expect(page.locator('article.post h1')).toContainText('The Prodigal Son')
+  await expect(page.locator('article.post .passage')).toContainText('Luke 15:11-32')
+})
+
 test('unknown command suggests help', async ({ page }) => {
   await run(page, 'frobnicate')
   await expect(page.locator('#term-output')).toContainText('command not found')

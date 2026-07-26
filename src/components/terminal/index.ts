@@ -48,8 +48,12 @@ export function mountTerminal(): void {
   const dataEl = document.getElementById('terminal-data')
   if (!root || !dataEl) return
 
-  const { posts } = JSON.parse(dataEl.textContent ?? '{"posts":[]}') as { posts: PostMeta[] }
+  const { posts = [], studies = [] } = JSON.parse(dataEl.textContent ?? '{}') as {
+    posts?: PostMeta[]
+    studies?: PostMeta[]
+  }
   const sorted = [...posts].sort((a, b) => b.date.localeCompare(a.date))
+  const sortedStudies = [...studies].sort((a, b) => b.date.localeCompare(a.date))
 
   const history = createHistory()
   const registry = createRegistry()
@@ -68,8 +72,9 @@ export function mountTerminal(): void {
       try { localStorage.setItem('gods:theme', t) } catch { /* private mode */ }
       return true
     },
-    vfs: createVfs(sorted),
+    vfs: createVfs(sorted, sortedStudies),
     posts: sorted,
+    studies: sortedStudies,
     registry,
     historyList: () => history.all(),
   }

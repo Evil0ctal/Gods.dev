@@ -20,10 +20,18 @@ test('post page has terminal chrome, code copy button and jsonld', async ({ page
   expect(ld).toContain('"BlogPosting"')
 })
 
-test('rss feed serves published posts only', async ({ page }) => {
+test('rss feed serves published posts and studies, no drafts', async ({ page }) => {
   const res = await page.request.get('/rss.xml')
   expect(res.status()).toBe(200)
   const xml = await res.text()
   expect(xml).toContain('building-gods-dev')
+  expect(xml).toContain('/study/the-prodigal-son/')
   expect(xml).not.toContain('drafts-are-invisible')
+})
+
+test('study index lists articles with passages', async ({ page }) => {
+  await page.goto('/study/')
+  await expect(page.locator('h1')).toContainText('~/study')
+  await expect(page.locator('.study-list a[href="/study/sermon-on-the-mount/"]')).toBeVisible()
+  await expect(page.locator('.study-list')).toContainText('Luke 15:11-32')
 })

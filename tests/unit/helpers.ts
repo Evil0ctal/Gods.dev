@@ -23,6 +23,7 @@ export function makeCtx(overrides: Partial<TerminalContext> = {}): TerminalConte
     },
     vfs: emptyVfs,
     posts: [],
+    studies: [],
     registry: createRegistry(),
     historyList: () => [],
     ...overrides,

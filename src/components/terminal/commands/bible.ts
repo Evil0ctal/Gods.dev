@@ -2,6 +2,7 @@ import type { Command } from '../core/types'
 import type { BibleBook, BibleIndex, BibleRef } from '../core/bible'
 import { extractVerses, findBook, parseChapterVerse, pickDaily, pickRandom, refLabel } from '../core/bible'
 import { cmdLink, escapeHtml, htmlLine, line } from '../core/utils'
+import { CLASSIC_PASSAGES } from '../../../data/passages'
 
 export interface BibleDeps {
   loadIndex: () => Promise<BibleIndex | null>
@@ -16,6 +17,7 @@ const USAGE = [
   '  bible john 3:16          a verse',
   '  bible john 3:16-18       a passage',
   '  bible john 3             a whole chapter',
+  '  bible classics           the greatest hits',
   '  bible random             let providence decide',
   '  bible books              all 27 books of the New Testament',
 ]
@@ -56,7 +58,7 @@ export function createBibleCmd(deps: BibleDeps): Command {
             line(`✝ verse of the day — ${today}`, 'muted'),
             ...res.lines,
             line(''),
-            line('try: bible books · bible john 3:16 · bible random', 'muted'),
+            line('try: bible classics · bible john 3:16 · bible random', 'muted'),
           ],
         }
       }
@@ -71,6 +73,21 @@ export function createBibleCmd(deps: BibleDeps): Command {
                 `  ${cmdLink(`bible ${b.slug} 1`, b.slug)}${' '.repeat(Math.max(1, 17 - b.slug.length))}${escapeHtml(b.name)} — ${b.chapters.length} chapter${b.chapters.length > 1 ? 's' : ''}`,
               ),
             ),
+          ],
+        }
+      }
+      if (sub === 'classics') {
+        const width = Math.max(...CLASSIC_PASSAGES.map((p) => p.title.length)) + 3
+        return {
+          lines: [
+            line('The greatest hits of the New Testament (click to read):', 'muted'),
+            ...CLASSIC_PASSAGES.map((p) => {
+              const book = index.books.find((b) => b.slug === p.book)
+              const label = `${book?.name ?? p.book} ${p.ref}`
+              return htmlLine(
+                `  ${cmdLink(`bible ${p.book} ${p.ref}`, p.title)}${' '.repeat(width - p.title.length)}<span class="muted">${escapeHtml(label)}</span>`,
+              )
+            }),
           ],
         }
       }

@@ -14,4 +14,19 @@ const blog = defineCollection({
   }),
 })
 
-export const collections = { blog }
+const study = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/study' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    /** 本篇研读的经文段落，如 'Luke 15:11-32' */
+    passage: z.string(),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+    ogImage: z.string().optional(),
+  }),
+})
+
+export const collections = { blog, study }

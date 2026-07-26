@@ -1,4 +1,5 @@
 import type { PostMeta, VfsDir, VfsNode } from './types'
+import { CLASSIC_PASSAGES } from '../../../data/passages'
 
 const PROPHECY = `an old god left this behind. it does not want to be read — it wants to be earned.
 
@@ -17,7 +18,7 @@ Nothing here is quite what it seems. Some directories are shy —
 Start with: help, neofetch, blog, projects
 The curious get further:  ls -a, cat, cd`
 
-export function createVfs(posts: PostMeta[]): VfsDir {
+export function createVfs(posts: PostMeta[], studies: PostMeta[] = []): VfsDir {
   const blogChildren: Record<string, VfsNode> = {}
   for (const p of posts) {
     blogChildren[`${p.slug}.md`] = {
@@ -25,6 +26,16 @@ export function createVfs(posts: PostMeta[]): VfsDir {
       content: `# ${p.title}\n\n${p.description}\n\n(read the full post: blog read ${p.slug})`,
     }
   }
+
+  const studyChildren: Record<string, VfsNode> = {}
+  for (const s of studies) {
+    studyChildren[`${s.slug}.md`] = {
+      type: 'file',
+      content: `# ${s.title}\n\n${s.description}\n\n(read the full study: study read ${s.slug})`,
+    }
+  }
+
+  const classics = CLASSIC_PASSAGES.map((p) => `  ${p.title.padEnd(30)}bible ${p.book} ${p.ref}`).join('\n')
 
   return {
     type: 'dir',
@@ -49,9 +60,14 @@ export function createVfs(posts: PostMeta[]): VfsDir {
 
 (World English Bible — public domain. even the gods respect licensing.)`,
                   },
+                  'classics.txt': {
+                    type: 'file',
+                    content: `the greatest hits. speak any line to hear it:\n\n${classics}`,
+                  },
                 },
               },
               blog: { type: 'dir', children: blogChildren },
+              study: { type: 'dir', children: studyChildren },
               '.secrets': {
                 type: 'dir',
                 children: { 'prophecy.txt': { type: 'file', content: PROPHECY } },
