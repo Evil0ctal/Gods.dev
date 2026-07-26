@@ -29,10 +29,11 @@ test('help lists commands and hides easter eggs', async ({ page }) => {
   await expect(output.getByRole('button', { name: 'sudo' })).toHaveCount(0)
 })
 
-test('clicking a command link executes it', async ({ page }) => {
+test('clicking a command link executes it and returns focus to the input', async ({ page }) => {
   await run(page, 'help')
   await page.locator('#term-output .cmd-link[data-cmd="neofetch"]').first().click()
   await expect(page.locator('#term-output')).toContainText('gods.dev 1.0 (Olympus)')
+  await expect(page.locator('#term-input')).toBeFocused()
 })
 
 test('tab completes a unique prefix', async ({ page }) => {

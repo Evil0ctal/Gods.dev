@@ -37,6 +37,14 @@ export function createTerminalUi(opts: TerminalUiOptions) {
     if (scroller) scroller.scrollTop = scroller.scrollHeight
   }
 
+  /** 点击 .cmd-link 会把焦点带到按钮上，光标随之消失——执行完把焦点还给输入框。
+      仅限精确指针设备：移动端强制聚焦会每次都弹出软键盘。 */
+  function refocusInput(): void {
+    if (!input.disabled && window.matchMedia('(pointer: fine)').matches) {
+      input.focus({ preventScroll: true })
+    }
+  }
+
   function printHtml(html: string, cls?: string): void {
     const div = document.createElement('div')
     div.className = `term-line${cls ? ` ${cls}` : ''}`
@@ -177,9 +185,13 @@ export function createTerminalUi(opts: TerminalUiOptions) {
     input.addEventListener('keydown', onKeydown)
     opts.root.addEventListener('click', (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('.cmd-link')
-      if (btn?.dataset.cmd) void execute(btn.dataset.cmd)
-      else if (window.getSelection()?.toString()) return // 正在选中文本复制，别抢焦点
-      else if (e.target === opts.root || output.contains(e.target as Node)) input.focus()
+      if (btn?.dataset.cmd) {
+        void execute(btn.dataset.cmd).then(refocusInput)
+      } else if (window.getSelection()?.toString()) {
+        return // 正在选中文本复制，别抢焦点
+      } else if (e.target === opts.root || output.contains(e.target as Node)) {
+        input.focus()
+      }
     })
     input.focus()
   }
