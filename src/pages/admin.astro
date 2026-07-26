@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import TerminalWindow from '../components/TerminalWindow.astro'
+---
+
+<BaseLayout title="admin — nice try" description="There is no admin panel." noindex={true}>
+  <TerminalWindow title="root@gods.dev: /admin — ACCESS DENIED">
+    <h1>403 — nice try.</h1>
+    <p>
+      You read <code>robots.txt</code> and came straight here. Respect.
+      That is exactly the right instinct — but this is a static site.
+      There is no admin panel. There is no database. There is no spoon.
+    </p>
+    <p class="muted">
+      Your visit has been logged to <code>/dev/null</code>, where it will be
+      reviewed by nobody, forever.
+    </p>
+    <p>
+      Since you clearly like poking around:
+      <a class="term-link" href="/">the terminal</a> rewards people like you.
+      Try <code>ls -a</code> somewhere private.
+    </p>
+  </TerminalWindow>
+</BaseLayout>

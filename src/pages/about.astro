@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import TerminalWindow from '../components/TerminalWindow.astro'
+import { SITE } from '../config/site'
+---
+
+<BaseLayout title={`about — ${SITE.title}`} description={`About ${SITE.name}: security researcher, open-source developer, terminal enthusiast.`}>
+  <TerminalWindow title="guest@gods.dev: ~/about">
+    <p class="muted">$ cat about.txt</p>
+    <h1>{SITE.name}</h1>
+    <p>
+      Security researcher and open-source developer. I take software apart to
+      understand it, then build tools so you can do the same — legally, and
+      with better error messages.
+    </p>
+    <p>
+      Most of my public work lives on
+      <a class="term-link" href={SITE.github}>GitHub</a>: scraping APIs,
+      automation tooling, and infrastructure for people who like their
+      interfaces monospaced.
+    </p>
+    <h2>This site</h2>
+    <p>
+      gods.dev is a static Astro site pretending to be a shell. There is no
+      backend, no tracking, no cookies — just HTML, a little TypeScript, and
+      more hidden corners than strictly necessary. The
+      <a class="term-link" href="https://github.com/Evil0ctal/Gods.dev">source is public</a>.
+    </p>
+    <h2>Contact</h2>
+    <p>
+      Email: <a class="term-link" href={`mailto:${SITE.email}`}>{SITE.email}</a><br />
+      GitHub: <a class="term-link" href={SITE.github}>github.com/Evil0ctal</a>
+    </p>
+  </TerminalWindow>
+</BaseLayout>

@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import TerminalWindow from '../components/TerminalWindow.astro'
+import { SITE } from '../config/site'
+import { PROJECTS } from '../data/projects'
+---
+
+<BaseLayout title={`projects — ${SITE.title}`} description={`Selected open-source projects by ${SITE.name}.`}>
+  <TerminalWindow title="guest@gods.dev: ~/projects">
+    <p class="muted">$ ls -la ~/projects</p>
+    <h1>Projects</h1>
+    <ul class="projects">
+      {PROJECTS.map((p) => (
+        <li>
+          <h2><a class="term-link" href={p.url}>{p.name}</a></h2>
+          <p>{p.description}</p>
+          <p class="muted">[{p.tags.join(', ')}]</p>
+        </li>
+      ))}
+    </ul>
+    <p class="muted">Everything else: <a class="term-link" href={SITE.github}>github.com/Evil0ctal</a></p>
+  </TerminalWindow>
+</BaseLayout>
+
+<style>
+  .projects { list-style: none; padding: 0; }
+  .projects li { margin-bottom: 1.6rem; }
+  .projects h2 { margin-bottom: 0.2rem; font-size: 1.05rem; }
+  h1 { font-size: 1.3rem; }
+</style>

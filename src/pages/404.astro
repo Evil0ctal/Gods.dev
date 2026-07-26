@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import TerminalWindow from '../components/TerminalWindow.astro'
+---
+
+<BaseLayout title="404 — kernel panic" description="Page not found." noindex={true}>
+  <TerminalWindow title="guest@gods.dev: PANIC">
+    <pre class="line-error">
+KERNEL PANIC — not syncing: attempted to access a page that does not exist
+
+Call Trace:
+  [&lt;ffffffff81234567&gt;] your_click+0x42/0x1337
+  [&lt;ffffffff89abcdef&gt;] wishful_thinking+0x0/0xdead
+  [&lt;ffffffff8badf00d&gt;] http_404_handler+0x404/0x404
+
+---[ end trace 0000000000000404 ]---</pre>
+    <p>The page you wanted is gone, was never here, or is hiding on purpose.</p>
+    <p class="muted">
+      (hiding on purpose is not hypothetical on this site. the terminal at
+      <a class="term-link" href="/">gods.dev</a> knows things. dotfiles, prophecies, flags...)
+    </p>
+    <p><a class="term-link" href="/">reboot → /</a></p>
+  </TerminalWindow>
+</BaseLayout>
