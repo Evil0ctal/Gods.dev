@@ -139,6 +139,54 @@ test('study command lists notes and navigates to an article', async ({ page }) =
   await expect(page.locator('article.post .passage')).toContainText('Luke 15:11-32')
 })
 
+test('ctf lists the challenge board with a scoreboard', async ({ page }) => {
+  await run(page, 'ctf')
+  await expect(page.locator('#term-output')).toContainText('gods.dev CTF')
+  await expect(page.locator('#term-output')).toContainText('score: 0/')
+  await expect(page.locator('#term-output .cmd-link[data-cmd="ctf scroll-of-hermes"]')).toBeVisible()
+})
+
+test('ctf challenge detail shows prompt and hints', async ({ page }) => {
+  await run(page, 'ctf scroll-of-hermes')
+  await expect(page.locator('#term-output')).toContainText('Scroll of Hermes')
+  await run(page, 'ctf scroll-of-hermes hint 1')
+  await expect(page.locator('#term-output')).toContainText('hint 1/')
+})
+
+test('ctf artifact files are reachable in the terminal filesystem', async ({ page }) => {
+  await run(page, 'cat ~/.ctf/scroll_of_hermes')
+  await expect(page.locator('#term-output')).toContainText('SCROLL OF HERMES')
+  await run(page, 'cat /opt/olympus/forge.js')
+  await expect(page.locator('#term-output')).toContainText('function keygen')
+  await run(page, 'cat /var/log/olympus/access.log')
+  await expect(page.locator('#term-output')).toContainText('/styx/ferry')
+})
+
+test('solve a challenge end-to-end (flag decoded at runtime, never hardcoded)', async ({ page }) => {
+  await run(page, 'cat ~/.ctf/scroll_of_hermes')
+  // decode the shipped payload in-browser: base64 then ROT13 — the flag is
+  // never written into this test file, only derived from the artifact
+  const flag = await page.evaluate(() => {
+    const text = document.querySelector('#term-output')!.textContent ?? ''
+    const payload = text.match(/[A-Za-z0-9+/]{24,}={0,2}/)![0]
+    const rot13 = (s: string) =>
+      s.replace(/[a-zA-Z]/g, (c) => {
+        const b = c <= 'Z' ? 65 : 97
+        return String.fromCharCode(((c.charCodeAt(0) - b + 13) % 26) + b)
+      })
+    return rot13(atob(payload))
+  })
+  expect(flag).toMatch(/^gods\{.+\}$/)
+  await run(page, `flag submit ${flag}`)
+  await expect(page.locator('#term-output')).toContainText('captured!')
+  // solved-state persists to the scoreboard and across a reload
+  await run(page, 'ctf scoreboard')
+  await expect(page.locator('#term-output')).toContainText('75/')
+  await page.reload()
+  await run(page, 'ctf scoreboard')
+  await expect(page.locator('#term-output')).toContainText('solved 1/')
+})
+
 test('unknown command suggests help', async ({ page }) => {
   await run(page, 'frobnicate')
   await expect(page.locator('#term-output')).toContainText('command not found')

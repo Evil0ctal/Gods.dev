@@ -1,7 +1,20 @@
 import { describe, it, expect } from 'vitest'
-import { FLAGS, sha256Hex, checkFlag } from '../../src/components/terminal/core/flags'
-import { flagCmd } from '../../src/components/terminal/commands/flag'
-import { makeCtx } from './helpers'
+import { sha256Hex, checkFlag } from '../../src/components/terminal/core/flags'
+import type { Challenge } from '../../src/components/terminal/core/challenges'
+import { flagCmd, createFlagCmd } from '../../src/components/terminal/commands/flag'
+import { makeCtx, makeMemoryCtf } from './helpers'
+
+const dummy = (sha: string): Challenge => ({
+  id: 'test01',
+  name: 'Dummy',
+  category: 'crypto',
+  difficulty: 'easy',
+  points: 10,
+  sha256: sha,
+  where: 'nowhere',
+  prompt: 'p',
+  hints: [],
+})
 
 describe('sha256Hex', () => {
   it('hashes to lowercase hex', async () => {
@@ -13,26 +26,17 @@ describe('sha256Hex', () => {
 })
 
 describe('checkFlag', () => {
-  const dummy = [{ id: 'test01', name: 'Dummy', sha256: '' }]
-  it('accepts a submission whose hash matches', async () => {
-    const flags = [{ ...dummy[0]!, sha256: await sha256Hex('gods{dummy}') }]
-    expect(await checkFlag('gods{dummy}', flags)).toEqual(flags[0])
+  it('accepts a submission whose hash matches and returns the challenge', async () => {
+    const c = [dummy(await sha256Hex('gods{dummy}'))]
+    expect(await checkFlag('gods{dummy}', c)).toEqual(c[0])
   })
   it('rejects non-matching submissions', async () => {
-    const flags = [{ ...dummy[0]!, sha256: await sha256Hex('gods{dummy}') }]
-    expect(await checkFlag('gods{nope}', flags)).toBeNull()
+    const c = [dummy(await sha256Hex('gods{dummy}'))]
+    expect(await checkFlag('gods{nope}', c)).toBeNull()
   })
   it('trims whitespace before hashing', async () => {
-    const flags = [{ ...dummy[0]!, sha256: await sha256Hex('gods{dummy}') }]
-    expect(await checkFlag('  gods{dummy}  ', flags)).toEqual(flags[0])
-  })
-})
-
-describe('production flag registry', () => {
-  it('contains flag01 with a 64-char hex hash and no plaintext', () => {
-    const f = FLAGS.find((f) => f.id === 'flag01')
-    expect(f?.sha256).toMatch(/^[0-9a-f]{64}$/)
-    expect(JSON.stringify(FLAGS)).not.toContain('gods{')
+    const c = [dummy(await sha256Hex('gods{dummy}'))]
+    expect(await checkFlag('  gods{dummy}  ', c)).toEqual(c[0])
   })
 })
 
@@ -45,5 +49,27 @@ describe('flag command', () => {
   it('rejects a wrong flag with an error line', async () => {
     const res = await flagCmd.run(['submit', 'gods{wrong}'], makeCtx())
     expect(res.lines[0]?.kind).toBe('error')
+  })
+  // happy-path tests use an injected dummy challenge — never a real flag plaintext,
+  // which must not appear in any committed file.
+  const dummyChallenge: Challenge = {
+    id: 'dummy', name: 'Dummy Gate', category: 'crypto', difficulty: 'easy', points: 42,
+    sha256: 'x', where: 'nowhere', prompt: 'p', hints: [],
+  }
+  const dummyFlagCmd = createFlagCmd({ check: async (s) => (s.trim() === 'gods{ok}' ? dummyChallenge : null) })
+
+  it('marks the challenge solved and reports points on a correct submission', async () => {
+    const ctf = makeMemoryCtf()
+    const res = await dummyFlagCmd.run(['submit', 'gods{ok}'], makeCtx({ ctf }))
+    const text = res.lines.map((l) => l.text).join('\n')
+    expect(res.lines[0]?.kind).toBe('success')
+    expect(text).toContain('Dummy Gate')
+    expect(text).toContain('+42')
+    expect(ctf.solved()).toContain('dummy')
+  })
+  it('reports already-captured on a repeat submission without double-counting', async () => {
+    const ctf = makeMemoryCtf(['dummy'])
+    const res = await dummyFlagCmd.run(['submit', 'gods{ok}'], makeCtx({ ctf }))
+    expect(res.lines.map((l) => l.text).join('\n')).toContain('already captured')
   })
 })

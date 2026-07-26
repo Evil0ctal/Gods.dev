@@ -24,9 +24,21 @@ export function makeCtx(overrides: Partial<TerminalContext> = {}): TerminalConte
     vfs: emptyVfs,
     posts: [],
     studies: [],
+    ctf: makeMemoryCtf(),
     registry: createRegistry(),
     historyList: () => [],
     ...overrides,
   }
   return ctx
+}
+
+/** 内存版 CtfStore，供测试使用 */
+export function makeMemoryCtf(initial: string[] = []) {
+  const set = new Set(initial)
+  return {
+    solved: () => [...set],
+    markSolved: (id: string) => {
+      set.add(id)
+    },
+  }
 }

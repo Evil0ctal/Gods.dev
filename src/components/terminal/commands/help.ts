@@ -1,7 +1,7 @@
 import type { Command } from '../core/types'
 import { cmdLink, htmlLine, line } from '../core/utils'
 
-const GROUP_ORDER = ['intel', 'content', 'scripture', 'filesystem', 'shell']
+const GROUP_ORDER = ['intel', 'content', 'scripture', 'ctf', 'filesystem', 'shell']
 const FRAME_WIDTH = 42
 
 export const helpCmd: Command = {

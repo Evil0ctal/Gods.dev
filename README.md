@@ -16,7 +16,9 @@ like a shell, and hides more than it shows.
 - 📝 Markdown blog with an `ls -la` aesthetic
 - 🎨 Four switchable themes (`theme crt` for the 1978 experience)
 - 🥚 Easter eggs. Everywhere. `view-source` is a feature, not a bug
-- ⚑ CTF-style flags — format `gods{...}`, submit in the terminal
+- ⚑ A full CTF — run `ctf` in the terminal: 7 progressive web / crypto /
+  reversing / stego / forensics challenges, flags `gods{...}`, local scoreboard
+  and ranks (script kiddie → god). Also browsable at `/ctf`
 
 ## Development
 

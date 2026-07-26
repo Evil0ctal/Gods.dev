@@ -1,20 +1,5 @@
-export interface FlagEntry {
-  id: string
-  name: string
-  sha256: string
-}
-
-/**
- * CTF flag registry. Only hashes live here — go find the plaintext.
- * v2: append new entries; the validator needs no changes.
- */
-export const FLAGS: FlagEntry[] = [
-  {
-    id: 'flag01',
-    name: 'The Gates',
-    sha256: 'ec4e3c50b1e938f741b6125829db9225bb8c8f3dd6871938f12885fc9dfeaf59',
-  },
-]
+import type { Challenge } from './challenges'
+import { CHALLENGES, findChallengeByHash } from './challenges'
 
 export async function sha256Hex(text: string): Promise<string> {
   const data = new TextEncoder().encode(text)
@@ -22,10 +7,11 @@ export async function sha256Hex(text: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
+/** 提交一个 flag：命中返回对应关卡，否则 null。明文永不落盘，只比对哈希。 */
 export async function checkFlag(
   submission: string,
-  flags: FlagEntry[] = FLAGS,
-): Promise<FlagEntry | null> {
+  challenges: Challenge[] = CHALLENGES,
+): Promise<Challenge | null> {
   const hash = await sha256Hex(submission.trim())
-  return flags.find((f) => f.sha256 === hash) ?? null
+  return findChallengeByHash(hash, challenges) ?? null
 }

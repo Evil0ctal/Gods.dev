@@ -21,6 +21,17 @@ test('404 kernel panic with clue', async ({ page }) => {
   await expect(page.locator('body')).toContainText('KERNEL PANIC')
 })
 
+test('ctf hub page lists challenges and hides a flag in its source', async ({ page }) => {
+  await page.goto('/ctf/')
+  await expect(page.locator('h1')).toContainText('~/ctf')
+  await expect(page.locator('.ctf-name').first()).toBeVisible()
+  // the "Source of Truth" challenge: a base64 flag in a head deploy comment
+  const res = await page.request.get('/ctf/')
+  const html = await res.text()
+  expect(html).toContain('deploy: olympus-prod')
+  expect(html).toContain('sha0:')
+})
+
 test('robots.txt and sitemap exist; sitemap excludes admin', async ({ page }) => {
   const robots = await page.request.get('/robots.txt')
   expect(await robots.text()).toContain('Disallow: /admin/')

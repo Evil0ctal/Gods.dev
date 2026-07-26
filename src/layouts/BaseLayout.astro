@@ -39,6 +39,7 @@ const ogImageAbs = new URL(ogImage, SITE.url).href
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageAbs} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <slot name="head" />
     <script is:inline>
       // theme before first paint — no FOUC
       try {

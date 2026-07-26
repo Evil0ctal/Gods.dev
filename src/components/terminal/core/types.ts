@@ -47,8 +47,15 @@ export interface TerminalContext {
   vfs: VfsDir
   posts: PostMeta[]
   studies: PostMeta[]
+  ctf: CtfStore
   registry: CommandRegistry
   historyList(): string[]
+}
+
+/** CTF 解题进度存储（生产用 localStorage，测试注入内存实现） */
+export interface CtfStore {
+  solved(): string[]
+  markSolved(id: string): void
 }
 
 export interface Command {

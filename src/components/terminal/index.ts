@@ -40,6 +40,32 @@ async function refreshVotd(): Promise<void> {
   }
 }
 
+/** localStorage 支撑的 CTF 解题存储；隐私模式下降级为内存 */
+function createCtfStore() {
+  const KEY = 'gods:ctf:solved'
+  const read = (): string[] => {
+    try {
+      const raw = localStorage.getItem(KEY)
+      const arr = raw ? (JSON.parse(raw) as unknown) : []
+      return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string') : []
+    } catch {
+      return []
+    }
+  }
+  return {
+    solved: read,
+    markSolved(id: string) {
+      const set = new Set(read())
+      set.add(id)
+      try {
+        localStorage.setItem(KEY, JSON.stringify([...set]))
+      } catch {
+        /* private mode */
+      }
+    },
+  }
+}
+
 /** 让移动端浏览器的状态栏配色跟随当前主题背景色 */
 function syncThemeColor(): void {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
@@ -78,6 +104,7 @@ export function mountTerminal(): void {
     vfs: createVfs(sorted, sortedStudies),
     posts: sorted,
     studies: sortedStudies,
+    ctf: createCtfStore(),
     registry,
     historyList: () => history.all(),
   }

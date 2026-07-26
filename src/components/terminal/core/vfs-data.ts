@@ -1,5 +1,6 @@
 import type { PostMeta, VfsDir, VfsNode } from './types'
 import { CLASSIC_PASSAGES } from '../../../data/passages'
+import { FORGE_JS, OLYMPUS_ACCESS_LOG, SCROLL_OF_HERMES, UNSEEN_TXT } from './ctf-artifacts'
 
 const PROPHECY = `an old god left this behind. it does not want to be read — it wants to be earned.
 
@@ -68,9 +69,47 @@ export function createVfs(posts: PostMeta[], studies: PostMeta[] = []): VfsDir {
               },
               blog: { type: 'dir', children: blogChildren },
               study: { type: 'dir', children: studyChildren },
+              scriptures: {
+                type: 'dir',
+                children: { 'unseen.txt': { type: 'file', content: UNSEEN_TXT } },
+              },
+              '.ctf': {
+                type: 'dir',
+                children: {
+                  'README.txt': {
+                    type: 'file',
+                    content: `challenge material lives here and elsewhere on the machine.
+run 'ctf' in the terminal for the full board.`,
+                  },
+                  scroll_of_hermes: { type: 'file', content: SCROLL_OF_HERMES },
+                },
+              },
               '.secrets': {
                 type: 'dir',
                 children: { 'prophecy.txt': { type: 'file', content: PROPHECY } },
+              },
+            },
+          },
+        },
+      },
+      opt: {
+        type: 'dir',
+        children: {
+          olympus: {
+            type: 'dir',
+            children: { 'forge.js': { type: 'file', content: FORGE_JS } },
+          },
+        },
+      },
+      var: {
+        type: 'dir',
+        children: {
+          log: {
+            type: 'dir',
+            children: {
+              olympus: {
+                type: 'dir',
+                children: { 'access.log': { type: 'file', content: OLYMPUS_ACCESS_LOG } },
               },
             },
           },

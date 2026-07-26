@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import TerminalWindow from '../components/TerminalWindow.astro'
+import { SITE } from '../config/site'
+import { orderedChallenges, totalPoints, CHALLENGES } from '../components/terminal/core/challenges'
+
+const challenges = orderedChallenges()
+
+// Challenge "Source of Truth" lives here: a deploy comment in the <head>.
+// The value is base64 — decoding it yields that challenge's flag.
+const deployComment =
+  '<!-- deploy: olympus-prod | scripture-integrity: sha0:Z29kc3t2MTN3X3MwdXJjM18wZl90cnV0aH0= | do not edit below the clouds -->'
+---
+
+<BaseLayout
+  title={`ctf — ${SITE.title}`}
+  description={`Capture-the-flag challenges on gods.dev: ${CHALLENGES.length} progressive web, crypto, reversing, stego and forensics puzzles solved entirely in the browser terminal.`}
+>
+  <Fragment slot="head" set:html={deployComment} />
+  <TerminalWindow title="guest@gods.dev: ~/ctf">
+    <h1>~/ctf</h1>
+    <p class="muted">
+      $ cat mission.txt — {CHALLENGES.length} flags, {totalPoints()} points, zero backends.
+    </p>
+    <p>
+      Every flag looks like <code>gods&#123;...&#125;</code> and is hidden somewhere on this
+      site — in the source, in a file, in a token, in the spaces between letters. Solve them
+      entirely client-side, then submit in the <a class="term-link" href="/">terminal</a>:
+      <code>flag submit gods&#123;...&#125;</code>. Progress is tracked locally — run
+      <code>ctf</code> in the terminal for the live scoreboard and hints.
+    </p>
+
+    <ul class="ctf-list">
+      {challenges.map((c) => (
+        <li>
+          <div class="ctf-head">
+            <span class="ctf-name">{c.name}</span>
+            <span class="muted ctf-tags">[{c.difficulty} · {c.category} · {c.points}pt]</span>
+          </div>
+          <p class="muted ctf-prompt">{c.prompt}</p>
+          <p class="muted ctf-where">↳ start: <code>{c.where}</code></p>
+        </li>
+      ))}
+    </ul>
+
+    <p class="muted">
+      New here? Open the <a class="term-link" href="/">terminal</a>, type <code>ctf</code>, and
+      pick a target. The easy ones only need <code>view-source</code> and a base64 decoder.
+    </p>
+  </TerminalWindow>
+</BaseLayout>
+
+<style>
+  h1 { font-size: 1.3rem; }
+  .ctf-list { list-style: none; padding: 0; }
+  .ctf-list li {
+    padding: 0.9rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--fg-muted) 25%, transparent);
+  }
+  .ctf-head { display: flex; gap: 0.75rem; align-items: baseline; flex-wrap: wrap; }
+  .ctf-name { color: var(--ok); font-weight: 600; }
+  .ctf-tags { font-size: 0.85rem; }
+  .ctf-prompt { margin: 0.4rem 0 0.2rem; line-height: 1.65; }
+  .ctf-where { margin: 0; font-size: 0.85rem; }
+</style>
