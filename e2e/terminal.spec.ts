@@ -79,6 +79,21 @@ test('wrong flag is rejected', async ({ page }) => {
   await expect(page.locator('#term-output')).toContainText('not fooled')
 })
 
+test('terminal scrolls internally while the page height stays fixed', async ({ page }) => {
+  for (let i = 0; i < 5; i++) await run(page, 'help')
+  const pageOverflow = await page.evaluate(
+    () => document.documentElement.scrollHeight - window.innerHeight,
+  )
+  expect(pageOverflow).toBeLessThanOrEqual(1)
+  const body = page.locator('#terminal .term-body')
+  const inner = await body.evaluate((el) => ({
+    canScroll: el.scrollHeight > el.clientHeight,
+    atBottom: el.scrollHeight - el.scrollTop - el.clientHeight < 4,
+  }))
+  expect(inner.canScroll).toBe(true)
+  expect(inner.atBottom).toBe(true)
+})
+
 test('unknown command suggests help', async ({ page }) => {
   await run(page, 'frobnicate')
   await expect(page.locator('#term-output')).toContainText('command not found')

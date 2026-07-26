@@ -80,7 +80,58 @@ const personLd = {
   </script>
 </BaseLayout>
 
+<style is:global>
+  /* homepage only: lock the page height so the terminal scrolls internally,
+     like a real terminal window — the page itself never grows.
+     overflow:hidden must sit on html too: body's overflow alone propagates
+     to the viewport (body reverts to visible) and descendants leak through */
+  html:has(#terminal) {
+    height: 100%;
+    overflow: hidden;
+  }
+  body:has(#terminal) {
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  body:has(#terminal) footer {
+    flex: none;
+    padding: 0.5rem 1rem;
+  }
+</style>
+
 <style>
+  #terminal {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    width: min(60rem, calc(100% - 2rem));
+    margin: 1.2rem auto 0.6rem;
+  }
+  #terminal .term-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    /* chromium quirk: without a containment boundary, this flex-item scroll
+       container's overflow leaks into the viewport's scroll area (phantom
+       page scroll). contain:paint seals it. */
+    contain: paint;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--fg-muted) 55%, transparent) transparent;
+  }
+  #terminal .term-body::-webkit-scrollbar { width: 8px; }
+  #terminal .term-body::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--fg-muted) 55%, transparent);
+    border-radius: 4px;
+  }
+  #terminal .term-body::-webkit-scrollbar-track { background: transparent; }
+  @media (max-width: 640px) {
+    #terminal { margin: 0; width: 100%; min-height: 0; }
+  }
+
   #term-input-line { display: flex; gap: 0.6rem; margin-top: 0.35rem; }
   #term-input-line[hidden] { display: none; }
   #term-prompt { color: var(--ok); white-space: nowrap; }

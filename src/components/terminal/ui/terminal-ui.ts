@@ -21,19 +21,29 @@ const KIND_CLASS: Record<string, string> = {
   ascii: 'line-ascii',
 }
 
+/** 真终端的 scrollback 是有限的；超过后最旧的行被丢弃，避免 DOM 无限膨胀 */
+const MAX_SCROLLBACK = 500
+
 export function createTerminalUi(opts: TerminalUiOptions) {
   const output = opts.root.querySelector<HTMLElement>('#term-output')!
   const input = opts.root.querySelector<HTMLInputElement>('#term-input')!
   const promptEl = opts.root.querySelector<HTMLElement>('#term-prompt')!
   const inputLine = opts.root.querySelector<HTMLElement>('#term-input-line')!
+  const titleEl = opts.root.querySelector<HTMLElement>('.term-titlebar .title')
+  const scroller = output.closest<HTMLElement>('.term-body')
   let vimMode = false
+
+  function scrollToBottom(): void {
+    if (scroller) scroller.scrollTop = scroller.scrollHeight
+  }
 
   function printHtml(html: string, cls?: string): void {
     const div = document.createElement('div')
     div.className = `term-line${cls ? ` ${cls}` : ''}`
     div.innerHTML = html
     output.appendChild(div)
-    div.scrollIntoView({ block: 'end' })
+    while (output.childElementCount > MAX_SCROLLBACK) output.firstElementChild?.remove()
+    scrollToBottom()
   }
 
   function printLine(l: OutputLine): void {
@@ -42,7 +52,9 @@ export function createTerminalUi(opts: TerminalUiOptions) {
   }
 
   function refreshPrompt(): void {
-    promptEl.textContent = `guest@gods.dev:${displayPath(opts.ctx.cwd)}$`
+    const path = displayPath(opts.ctx.cwd)
+    promptEl.textContent = `guest@gods.dev:${path}$`
+    if (titleEl) titleEl.textContent = `guest@gods.dev: ${path}`
   }
 
   function fakeCrash(): void {
@@ -121,6 +133,14 @@ export function createTerminalUi(opts: TerminalUiOptions) {
     } else if (e.key === 'l' && e.ctrlKey) {
       e.preventDefault()
       void execute('clear')
+    } else if (e.key === 'c' && e.ctrlKey && !window.getSelection()?.toString()) {
+      // ^C 中断当前输入行（有选区时不拦截，保住复制）
+      e.preventDefault()
+      printHtml(`<span class="line-muted">${escapeHtml(promptEl.textContent ?? '')}</span> ${escapeHtml(input.value)}^C`)
+      input.value = ''
+    } else if (e.key === 'u' && e.ctrlKey) {
+      e.preventDefault()
+      input.value = ''
     }
   }
 
@@ -158,6 +178,7 @@ export function createTerminalUi(opts: TerminalUiOptions) {
     opts.root.addEventListener('click', (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('.cmd-link')
       if (btn?.dataset.cmd) void execute(btn.dataset.cmd)
+      else if (window.getSelection()?.toString()) return // 正在选中文本复制，别抢焦点
       else if (e.target === opts.root || output.contains(e.target as Node)) input.focus()
     })
     input.focus()

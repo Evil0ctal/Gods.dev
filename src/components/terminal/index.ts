@@ -10,6 +10,12 @@ import { startMatrixRain } from './ui/matrix-rain'
 import { listenKonami } from './ui/konami'
 import { printConsoleBanner } from './ui/console-banner'
 
+/** 让移动端浏览器的状态栏配色跟随当前主题背景色 */
+function syncThemeColor(): void {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+  if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
+}
+
 export function mountTerminal(): void {
   const root = document.getElementById('terminal')
   const dataEl = document.getElementById('terminal-data')
@@ -31,6 +37,7 @@ export function mountTerminal(): void {
     setTheme(t: string): boolean {
       if (!(THEMES as readonly string[]).includes(t)) return false
       document.documentElement.dataset.theme = t
+      syncThemeColor()
       try { localStorage.setItem('gods:theme', t) } catch { /* private mode */ }
       return true
     },
@@ -51,6 +58,7 @@ export function mountTerminal(): void {
     },
   })
   void ui.start()
+  syncThemeColor()
   printConsoleBanner()
   listenKonami(() => startMatrixRain())
 }
