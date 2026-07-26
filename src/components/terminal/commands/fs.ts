@@ -5,6 +5,7 @@ import { line } from '../core/utils'
 export const lsCmd: Command = {
   name: 'ls',
   description: 'list directory contents',
+  category: 'filesystem',
   usage: 'ls [path]',
   run(args, ctx) {
     const target = args.find((a) => !a.startsWith('-')) ?? '.'
@@ -19,6 +20,7 @@ export const lsCmd: Command = {
 export const cdCmd: Command = {
   name: 'cd',
   description: 'change directory',
+  category: 'filesystem',
   usage: 'cd [path]',
   run(args, ctx) {
     const target = args[0] ?? '~'
@@ -35,6 +37,7 @@ export const cdCmd: Command = {
 export const catCmd: Command = {
   name: 'cat',
   description: 'read a file',
+  category: 'filesystem',
   usage: 'cat <file>',
   run(args, ctx) {
     const target = args[0]

@@ -14,6 +14,27 @@ describe('help', () => {
     expect(html).toContain('data-cmd="echo"')
     expect(html).toContain(echoCmd.description)
   })
+  it('renders grouped box frame with category headers', async () => {
+    const ctx = makeCtx()
+    ctx.registry.register(helpCmd)
+    ctx.registry.register(echoCmd)
+    const res = await helpCmd.run([], ctx)
+    const html = res.lines.map((l) => l.text).join('\n')
+    expect(html).toContain('gsh (gods shell) 0.1')
+    expect(html).toContain('┌─[ <span class="line-success">shell</span> ]')
+    expect(html).toContain('│  ')
+    expect(html).toContain('└──')
+    expect(html).toContain('tip: TAB completes')
+  })
+  it('groups uncategorized commands under misc', async () => {
+    const ctx = makeCtx()
+    ctx.registry.register(helpCmd)
+    ctx.registry.register({ name: 'mystery', description: 'no category', run: () => ({ lines: [] }) })
+    const res = await helpCmd.run([], ctx)
+    const html = res.lines.map((l) => l.text).join('\n')
+    expect(html).toContain('<span class="line-success">misc</span>')
+    expect(html).toContain('data-cmd="mystery"')
+  })
 })
 
 describe('echo', () => {

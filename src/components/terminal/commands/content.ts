@@ -6,6 +6,7 @@ import { aLink, escapeHtml, htmlLine, line } from '../core/utils'
 export const aboutCmd: Command = {
   name: 'about',
   description: 'who runs this machine',
+  category: 'intel',
   run() {
     return {
       lines: [
@@ -22,6 +23,7 @@ export const aboutCmd: Command = {
 export const projectsCmd: Command = {
   name: 'projects',
   description: 'selected open-source work',
+  category: 'content',
   run() {
     const lines = PROJECTS.flatMap((p) => [
       htmlLine(`${aLink(p.url, p.name)}  <span class="muted">[${p.tags.join(', ')}]</span>`),
@@ -36,6 +38,7 @@ export const projectsCmd: Command = {
 export const contactCmd: Command = {
   name: 'contact',
   description: 'reach the operator',
+  category: 'intel',
   run() {
     return {
       lines: [
@@ -50,6 +53,7 @@ export const contactCmd: Command = {
 export const blogCmd: Command = {
   name: 'blog',
   description: 'read the blog',
+  category: 'content',
   usage: 'blog [read <slug>]',
   run(args, ctx) {
     if (args[0] === 'read') {

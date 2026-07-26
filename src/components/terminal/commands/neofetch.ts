@@ -14,6 +14,7 @@ const LOGO = String.raw`
 export const neofetchCmd: Command = {
   name: 'neofetch',
   description: 'system information',
+  category: 'intel',
   run(_args, ctx) {
     const facts: Array<[string, string]> = [
       ['OS', 'gods.dev 1.0 (Olympus) x86_64'],

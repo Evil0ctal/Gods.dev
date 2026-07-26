@@ -4,6 +4,7 @@ import { escapeHtml, htmlLine, line } from '../core/utils'
 export const echoCmd: Command = {
   name: 'echo',
   description: 'print text back',
+  category: 'shell',
   usage: 'echo <text>',
   run(args) {
     return { lines: [htmlLine(escapeHtml(args.join(' ')))] }
@@ -13,6 +14,7 @@ export const echoCmd: Command = {
 export const whoamiCmd: Command = {
   name: 'whoami',
   description: 'who are you, really?',
+  category: 'intel',
   run() {
     return {
       lines: [
@@ -26,6 +28,7 @@ export const whoamiCmd: Command = {
 export const dateCmd: Command = {
   name: 'date',
   description: 'current date and time',
+  category: 'shell',
   run() {
     return { lines: [line(new Date().toString())] }
   },
@@ -34,6 +37,7 @@ export const dateCmd: Command = {
 export const clearCmd: Command = {
   name: 'clear',
   description: 'clear the screen',
+  category: 'shell',
   run() {
     return { lines: [], clear: true }
   },
@@ -42,6 +46,7 @@ export const clearCmd: Command = {
 export const historyCmd: Command = {
   name: 'history',
   description: 'your command history',
+  category: 'shell',
   run(_args, ctx) {
     const entries = ctx.historyList()
     if (entries.length === 0) return { lines: [line('history: empty. make some.', 'muted')] }

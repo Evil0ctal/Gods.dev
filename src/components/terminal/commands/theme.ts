@@ -14,6 +14,7 @@ const DESCRIPTIONS: Record<ThemeName, string> = {
 export const themeCmd: Command = {
   name: 'theme',
   description: 'switch the terminal theme',
+  category: 'shell',
   usage: 'theme [name]',
   run(args, ctx) {
     const target = args[0]?.toLowerCase()
