@@ -45,12 +45,12 @@ const personLd = {
     <div class="term-body">
       <div id="term-output" aria-live="polite">
         <section id="motd">
-          <pre class="line-ascii" aria-hidden="true">{`   ▄████  ▒█████  ▓█████▄   ██████     ▓█████▄ ▓█████  ██▒   █▓
-  ██▒ ▀█▒▒██▒  ██▒▒██▀ ██▌▒██    ▒     ▒██▀ ██▌▓█   ▀ ▓██░   █▒
- ▒██░▄▄▄░▒██░  ██▒░██   █▌░ ▓██▄       ░██   █▌▒███    ▓██  █▒░
- ░▓█  ██▓▒██   ██░░▓█▄   ▌  ▒   ██▒    ░▓█▄   ▌▒▓█  ▄   ▒██ █░░
- ░▒▓███▀▒░ ████▓▒░░▒████▓ ▒██████▒▒ ██▓░▒████▓ ░▒████▒   ▒▀█░
-  ░▒   ▒ ░ ▒░▒░▒░  ▒▒▓  ▒ ▒ ▒▓▒ ▒ ░ ▒▓▒ ▒▒▓  ▒ ░░ ▒░ ░   ░ ▐░`}</pre>
+          <pre class="line-ascii logo" aria-hidden="true">{` ██████╗  ██████╗ ██████╗ ███████╗   ██████╗ ███████╗██╗   ██╗
+██╔════╝ ██╔═══██╗██╔══██╗██╔════╝   ██╔══██╗██╔════╝██║   ██║
+██║  ███╗██║   ██║██║  ██║███████╗   ██║  ██║█████╗  ██║   ██║
+██║   ██║██║   ██║██║  ██║╚════██║   ██║  ██║██╔══╝  ╚██╗ ██╔╝
+╚██████╔╝╚██████╔╝██████╔╝███████║██╗██████╔╝███████╗ ╚████╔╝
+ ╚═════╝  ╚═════╝ ╚═════╝ ╚══════╝╚═╝╚═════╝ ╚══════╝  ╚═══╝`}</pre>
           <h1>{SITE.name} <span class="muted">@ gods.dev</span></h1>
           <p>{SITE.description}</p>
           <nav aria-label="Main">
@@ -106,6 +106,20 @@ const personLd = {
   }
   #motd h1 { font-size: 1.15rem; margin: 0.8rem 0 0.3rem; }
   #motd p { margin: 0.4rem 0; }
+
+  /* logo: theme-aware vertical gradient fill + soft glow.
+     text-shadow must be off — it would paint behind the transparent fill. */
+  #motd .logo {
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 55%, var(--fg-muted) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 45%, transparent));
+    line-height: 1.25;
+    /* 62-col art: shrink to fit narrow screens (mono glyph ≈ 0.6em wide) */
+    font-size: min(1em, calc((100vw - 4.5rem) / 37.2));
+  }
   #term-output :global(.term-line) { white-space: pre-wrap; word-break: break-word; min-height: 1.2em; }
 
   /* mobile command-suggestion chips: hidden on fine-pointer (desktop) devices,
