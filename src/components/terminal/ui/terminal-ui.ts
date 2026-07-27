@@ -1,9 +1,10 @@
-import type { CommandResult, OutputLine, TerminalContext } from '../core/types'
+import type { CommandResult, GameLaunch, OutputLine, ReplSession, TerminalContext } from '../core/types'
 import { parse } from '../core/parser'
 import { complete } from '../core/autocomplete'
 import { displayPath } from '../core/vfs'
 import { escapeHtml } from '../core/utils'
 import { playBoot } from './boot'
+import { beep, initSound } from '../core/sound'
 
 export interface TerminalUiOptions {
   root: HTMLElement
@@ -32,6 +33,7 @@ export function createTerminalUi(opts: TerminalUiOptions) {
   const titleEl = opts.root.querySelector<HTMLElement>('.term-titlebar .title')
   const scroller = output.closest<HTMLElement>('.term-body')
   let vimMode = false
+  let replMode: ReplSession | null = null
 
   function scrollToBottom(): void {
     if (scroller) scroller.scrollTop = scroller.scrollHeight
@@ -86,10 +88,74 @@ export function createTerminalUi(opts: TerminalUiOptions) {
     promptEl.textContent = '--INSERT--'
   }
 
+  function enterGame(g: GameLaunch): void {
+    input.disabled = true
+    inputLine.hidden = true
+    const screen = document.createElement('div')
+    screen.className = 'game-screen'
+    screen.id = 'game-screen'
+    output.appendChild(screen)
+    const header = `<div class="game-head"><span class="out-name">${escapeHtml(g.title)}</span> <span class="muted">— ${escapeHtml(g.controls)}</span></div>`
+
+    let keyHandler: (key: string) => void = () => {}
+    let timer: ReturnType<typeof setInterval> | null = null
+    let ended = false
+
+    const cleanup = () => {
+      if (timer) clearInterval(timer)
+      window.removeEventListener('keydown', onGameKey, true)
+      screen.remove()
+    }
+    const io = {
+      draw: (html: string) => {
+        screen.innerHTML = header + html
+        scrollToBottom()
+      },
+      onKey: (fn: (key: string) => void) => {
+        keyHandler = fn
+      },
+      every: (ms: number, fn: () => void) => {
+        if (timer) clearInterval(timer)
+        timer = setInterval(fn, ms)
+      },
+      exit: (summary?: OutputLine[]) => {
+        if (ended) return
+        ended = true
+        cleanup()
+        summary?.forEach(printLine)
+        inputLine.hidden = false
+        input.disabled = false
+        refreshPrompt()
+        input.focus()
+      },
+      rng: Math.random,
+      beep,
+    }
+    function onGameKey(e: KeyboardEvent): void {
+      if (e.key === 'q' || e.key === 'Escape') {
+        e.preventDefault()
+        io.exit([{ text: `quit ${g.title}.`, kind: 'muted' }])
+        return
+      }
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault()
+      keyHandler(e.key)
+    }
+    window.addEventListener('keydown', onGameKey, true)
+    g.run(io)
+  }
+
+  function enterRepl(session: ReplSession): void {
+    replMode = session
+    session.intro.forEach(printLine)
+    promptEl.textContent = session.prompt
+  }
+
   async function runResult(res: CommandResult): Promise<void> {
     if (res.clear) output.querySelectorAll('.term-line, #motd').forEach((el) => el.remove())
     for (const l of res.lines) printLine(l)
-    if (res.effect === 'crash') fakeCrash()
+    if (res.game) enterGame(res.game)
+    else if (res.repl) enterRepl(res.repl)
+    else if (res.effect === 'crash') fakeCrash()
     else if (res.effect === 'vim') enterVim()
     else if (res.effect) opts.onEffect(res.effect)
     if (res.navigate) setTimeout(() => (window.location.href = res.navigate!), 400)
@@ -105,6 +171,15 @@ export function createTerminalUi(opts: TerminalUiOptions) {
       } else printHtml('E492: Not an editor command. hint: :q!', 'line-error')
       return
     }
+    if (replMode) {
+      const { lines, done } = replMode.onInput(raw)
+      lines.forEach(printLine)
+      if (done) {
+        replMode = null
+        refreshPrompt()
+      }
+      return
+    }
     const parsed = parse(raw)
     if (!parsed) return
     opts.historyPush(raw)
@@ -114,10 +189,13 @@ export function createTerminalUi(opts: TerminalUiOptions) {
       return
     }
     await runResult(await cmd.run(parsed.args, opts.ctx))
-    if (!vimMode) refreshPrompt()
+    // a command may have entered vim/repl mode, which own the prompt
+    if (!vimMode && !replMode) refreshPrompt()
   }
 
   function onKeydown(e: KeyboardEvent): void {
+    // opt-in retro keypress tick (no-op unless `sound on`); skip modifiers
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) beep('key')
     if (e.key === 'Enter') {
       const v = input.value
       input.value = ''
@@ -153,6 +231,7 @@ export function createTerminalUi(opts: TerminalUiOptions) {
   }
 
   async function start(): Promise<void> {
+    initSound()
     const motd = output.querySelector<HTMLElement>('#motd')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     // boot plays every load; `gods:booted` is a skip override tests set.

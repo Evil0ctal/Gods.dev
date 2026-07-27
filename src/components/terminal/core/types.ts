@@ -12,7 +12,41 @@ export interface CommandResult {
   clear?: boolean
   navigate?: string
   effect?: 'matrix' | 'crash' | 'vim'
+  /** launch a real-time key-driven game (snake, 2048) — the terminal enters game mode */
+  game?: GameLaunch
+  /** enter a line-based captured session (text adventure) — input routes to it until done */
+  repl?: ReplSession
 }
+
+/** runtime handed to a real-time game: draw frames, read keys, run a tick loop */
+export interface GameIO {
+  /** replace the game screen with trusted, game-authored HTML */
+  draw(html: string): void
+  /** register the key handler (normalized KeyboardEvent.key values) */
+  onKey(fn: (key: string) => void): void
+  /** start/replace the tick loop */
+  every(ms: number, fn: () => void): void
+  /** end the game, printing optional summary lines back into the terminal */
+  exit(summary?: OutputLine[]): void
+  rng(): number
+  beep(kind: SoundKind): void
+}
+
+export interface GameLaunch {
+  title: string
+  /** one-line controls hint shown in the game header */
+  controls: string
+  run(io: GameIO): void
+}
+
+/** a captured line-input session (text adventure); input routes here until done */
+export interface ReplSession {
+  intro: OutputLine[]
+  prompt: string
+  onInput(line: string): { lines: OutputLine[]; done?: boolean }
+}
+
+export type SoundKind = 'key' | 'move' | 'eat' | 'merge' | 'win' | 'lose' | 'error' | 'boot'
 
 export interface PostMeta {
   slug: string

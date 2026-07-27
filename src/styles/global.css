@@ -91,6 +91,37 @@ a:hover, .term-link:hover { color: var(--accent-2); }
 .badge-ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
 .badge-warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 50%, transparent); }
 
+/* games */
+.game-screen { margin: 0.3rem 0; }
+.game-head { margin-bottom: 0.5rem; }
+.game-grid, .game-2048 {
+  margin: 0;
+  white-space: pre;
+  line-height: 1.0;
+  overflow-x: auto;
+}
+.game-grid { color: color-mix(in srgb, var(--fg-muted) 55%, transparent); }
+.g-snake { color: var(--ok); }
+.g-head { color: var(--accent); }
+.g-food { color: var(--err); }
+
+.game-2048 { line-height: 1.15; }
+.game-2048 .tile {
+  display: inline-block;
+  width: 5ch;
+  text-align: center;
+  margin-right: 0.4ch;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.tile-0 { color: color-mix(in srgb, var(--fg-muted) 45%, transparent); font-weight: 400; }
+.tile-2, .tile-4 { color: var(--fg); background: color-mix(in srgb, var(--fg-muted) 18%, transparent); }
+.tile-8, .tile-16 { color: var(--bg); background: var(--accent); }
+.tile-32, .tile-64 { color: var(--bg); background: var(--accent-2); }
+.tile-128, .tile-256 { color: var(--bg); background: var(--warn); }
+.tile-512, .tile-1024 { color: var(--bg); background: var(--ok); }
+.tile-2048 { color: var(--bg); background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+
 /* boot sequence */
 .boot-grub-sel { background: var(--accent); color: var(--bg); }
 .boot-count { color: var(--accent); font-weight: 600; }
