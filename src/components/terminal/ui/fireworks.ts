@@ -65,9 +65,12 @@ export function startFireworks(durationMs = 6000): void {
   let raf = 0
   function frame(t: number): void {
     raf = requestAnimationFrame(frame)
-    // fade the previous frame for trails
-    ctx.fillStyle = 'rgba(0,0,0,0.18)'
+    // fade previous frame toward TRANSPARENT (not black) so the terminal
+    // stays visible behind the sparks — destination-out erases alpha
+    ctx.globalCompositeOperation = 'destination-out'
+    ctx.fillStyle = 'rgba(0,0,0,0.22)'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.globalCompositeOperation = 'source-over'
 
     if (t - last > rand(350, 650) && t - start < durationMs - 1200) {
       last = t
