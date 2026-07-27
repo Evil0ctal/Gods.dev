@@ -48,3 +48,16 @@ test('sound command toggles', async ({ page }) => {
   await expect(page.locator('#term-output')).toContainText('sound')
   await expect(page.locator('#term-output .badge-ok')).toContainText('on')
 })
+
+test('birthday command greets and lights fireworks', async ({ page }) => {
+  await run(page, 'birthday')
+  await expect(page.locator('#term-output')).toContainText('HAPPY BIRTHDAY')
+  await expect(page.locator('#fireworks')).toBeAttached()
+})
+
+test('seasonal theme applies and persists', async ({ page }) => {
+  await run(page, 'theme christmas')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'christmas')
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'christmas')
+})

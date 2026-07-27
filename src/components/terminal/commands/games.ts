@@ -57,6 +57,33 @@ export const gamesCmd: Command = {
   },
 }
 
+export const birthdayCmd: Command = {
+  name: 'birthday',
+  description: 'party mode',
+  category: 'games',
+  hidden: true,
+  run() {
+    return {
+      lines: [
+        htmlLine('<span class="out-name">✦ ✦ ✦  HAPPY BIRTHDAY, Evil0ctal  ✦ ✦ ✦</span>'),
+        line('another lap around the sun, another year of breaking things.', 'muted'),
+        line('🎂  the gods raise a glass. type flag submit gods{...} if you find the cake.', 'muted'),
+      ],
+      effect: 'fireworks',
+    }
+  },
+}
+
+export const fireworksCmd: Command = {
+  name: 'fireworks',
+  description: 'light the sky',
+  category: 'games',
+  hidden: true,
+  run() {
+    return { lines: [line('🎆 lighting the sky ...', 'muted')], effect: 'fireworks' }
+  },
+}
+
 export const soundCmd: Command = {
   name: 'sound',
   description: 'toggle retro sound effects',

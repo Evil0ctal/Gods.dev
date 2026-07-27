@@ -3,6 +3,7 @@ import type { Challenge } from '../core/challenges'
 import { checkFlag } from '../core/flags'
 import { CHALLENGES, rankTitle, scoreOf, totalPoints } from '../core/challenges'
 import { cmdLink, htmlLine, line } from '../core/utils'
+import { fanfare } from '../core/sound'
 
 export interface FlagDeps {
   /** returns the matched challenge, or null. Default: hash-check against CHALLENGES. */
@@ -47,6 +48,7 @@ export function createFlagCmd(deps: FlagDeps): Command {
       if (already) {
         return { lines: [line(`⚑ ${hit.name} — already captured. (+0)`, 'muted'), ...scoreLines(solved)] }
       }
+      fanfare() // celebratory rising run (silent unless `sound on`)
       return {
         lines: [
           line(`⚑ CORRECT — "${hit.name}" captured!  +${hit.points} pts`, 'success'),

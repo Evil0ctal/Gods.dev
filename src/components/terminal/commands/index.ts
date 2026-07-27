@@ -8,7 +8,7 @@ import { neofetchCmd } from './neofetch'
 import { flagCmd } from './flag'
 import { bibleCmd } from './bible'
 import { ctfCmd } from './ctf'
-import { gamesCmd, snakeCmd, twenty48Cmd, adventureCmd, soundCmd } from './games'
+import { gamesCmd, snakeCmd, twenty48Cmd, adventureCmd, soundCmd, birthdayCmd, fireworksCmd } from './games'
 import { sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd } from './eggs'
 
 export function registerAll(reg: CommandRegistry): void {
@@ -16,7 +16,7 @@ export function registerAll(reg: CommandRegistry): void {
     helpCmd, aboutCmd, whoamiCmd, blogCmd, projectsCmd, contactCmd,
     themeCmd, neofetchCmd, clearCmd, historyCmd, echoCmd, dateCmd, soundCmd,
     lsCmd, cdCmd, catCmd, bibleCmd, studyCmd, ctfCmd,
-    gamesCmd, snakeCmd, twenty48Cmd, adventureCmd,
+    gamesCmd, snakeCmd, twenty48Cmd, adventureCmd, birthdayCmd, fireworksCmd,
     flagCmd, sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd,
     { ...contactCmd, name: 'social', hidden: true },
   ]

@@ -1,10 +1,12 @@
 import type { Command } from '../core/types'
 import { cmdLink, htmlLine, line } from '../core/utils'
 
-export const THEMES = ['default', 'crt', 'amber', 'light'] as const
+export const CORE_THEMES = ['default', 'crt', 'amber', 'light'] as const
+export const SEASONAL_THEMES = ['birthday', 'halloween', 'christmas', 'newyear', 'lunar', 'valentine'] as const
+export const THEMES = [...CORE_THEMES, ...SEASONAL_THEMES] as const
 export type ThemeName = (typeof THEMES)[number]
 
-const DESCRIPTIONS: Record<ThemeName, string> = {
+const DESCRIPTIONS: Record<string, string> = {
   default: 'tokyo night — the modern operator',
   crt: 'green phosphor — 1978 called',
   amber: 'amber mono — VT220 nostalgia',
@@ -22,12 +24,15 @@ export const themeCmd: Command = {
       return {
         lines: [
           line('Available themes (click to apply):', 'muted'),
-          ...THEMES.map((t) => {
+          ...CORE_THEMES.map((t) => {
             const current = t === ctx.getTheme() ? ' (current)' : ''
-            return htmlLine(
-              `  ${cmdLink(`theme ${t}`, `${t}${current}`)}  ${DESCRIPTIONS[t]}`,
-            )
+            return htmlLine(`  ${cmdLink(`theme ${t}`, `${t}${current}`)}  ${DESCRIPTIONS[t]}`)
           }),
+          line(''),
+          htmlLine(
+            `<span class="muted">seasonal:</span> ${SEASONAL_THEMES.map((t) => cmdLink(`theme ${t}`, t)).join('  ')}`,
+          ),
+          line('(seasonal palettes also apply on their own dates)', 'muted'),
         ],
       }
     }

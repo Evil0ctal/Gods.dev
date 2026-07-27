@@ -11,7 +11,7 @@ export interface CommandResult {
   lines: OutputLine[]
   clear?: boolean
   navigate?: string
-  effect?: 'matrix' | 'crash' | 'vim'
+  effect?: 'matrix' | 'crash' | 'vim' | 'fireworks'
   /** launch a real-time key-driven game (snake, 2048) — the terminal enters game mode */
   game?: GameLaunch
   /** enter a line-based captured session (text adventure) — input routes to it until done */
@@ -46,7 +46,7 @@ export interface ReplSession {
   onInput(line: string): { lines: OutputLine[]; done?: boolean }
 }
 
-export type SoundKind = 'key' | 'move' | 'eat' | 'merge' | 'win' | 'lose' | 'error' | 'boot'
+export type SoundKind = 'key' | 'move' | 'eat' | 'merge' | 'win' | 'lose' | 'error' | 'boot' | 'pop'
 
 export interface PostMeta {
   slug: string

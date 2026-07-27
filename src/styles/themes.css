@@ -65,6 +65,44 @@
 
 :root[data-theme='light'] { color-scheme: light; }
 
+/* ── seasonal / festival palettes (date-driven, or `theme <name>`) ── */
+:root[data-theme='birthday'] {
+  --bg: #1a0f24; --bg-elev: #241432; --bg-titlebar: #150c1e;
+  --fg: #ffe8ff; --fg-muted: #a173b5;
+  --accent: #ff5fd2; --accent-2: #ffd24a; --ok: #5ff0c0; --err: #ff6b8a; --warn: #ffd24a;
+  --glow: rgba(255, 95, 210, 0.5); --selection: #5a2a6e;
+}
+:root[data-theme='halloween'] {
+  --bg: #120a02; --bg-elev: #1c1006; --bg-titlebar: #0d0701;
+  --fg: #ffcf99; --fg-muted: #8c5a2b;
+  --accent: #ff7518; --accent-2: #a259ff; --ok: #9ece6a; --err: #ff4d4d; --warn: #ff7518;
+  --glow: rgba(255, 117, 24, 0.45); --selection: #4d2600;
+}
+:root[data-theme='christmas'] {
+  --bg: #0a1410; --bg-elev: #0f1d16; --bg-titlebar: #081109;
+  --fg: #eaf6ea; --fg-muted: #5c8c6a;
+  --accent: #e63946; --accent-2: #2ecc71; --ok: #2ecc71; --err: #e63946; --warn: #f4c542;
+  --glow: rgba(46, 204, 113, 0.4); --selection: #143a24;
+}
+:root[data-theme='newyear'] {
+  --bg: #0b0b10; --bg-elev: #14141c; --bg-titlebar: #08080c;
+  --fg: #f4ead0; --fg-muted: #8a7d5a;
+  --accent: #ffd700; --accent-2: #c0c0c0; --ok: #ffd700; --err: #ff5555; --warn: #ffe680;
+  --glow: rgba(255, 215, 0, 0.5); --selection: #4d4000;
+}
+:root[data-theme='lunar'] {
+  --bg: #1a0606; --bg-elev: #260a0a; --bg-titlebar: #140404;
+  --fg: #ffe9c7; --fg-muted: #b06a5a;
+  --accent: #ffcf40; --accent-2: #ff5a4d; --ok: #ffcf40; --err: #ff5a4d; --warn: #ffcf40;
+  --glow: rgba(255, 207, 64, 0.5); --selection: #5a1414;
+}
+:root[data-theme='valentine'] {
+  --bg: #1e0d14; --bg-elev: #2a121d; --bg-titlebar: #170a0f;
+  --fg: #ffe3ee; --fg-muted: #b86f8c;
+  --accent: #ff4d80; --accent-2: #ff9ec4; --ok: #7ef0b0; --err: #ff5566; --warn: #ffb3c9;
+  --glow: rgba(255, 77, 128, 0.45); --selection: #5a1f38;
+}
+
 /* CRT extras: phosphor glow + scanlines (reduced-motion drops the flicker) */
 :root[data-theme='crt'] body,
 :root[data-theme='amber'] body {

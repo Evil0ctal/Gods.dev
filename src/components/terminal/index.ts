@@ -9,8 +9,11 @@ import { registerAll } from './commands/index'
 import { THEMES } from './commands/theme'
 import { createTerminalUi } from './ui/terminal-ui'
 import { startMatrixRain } from './ui/matrix-rain'
+import { startFireworks } from './ui/fireworks'
 import { listenKonami } from './ui/konami'
 import { printConsoleBanner } from './ui/console-banner'
+import { festivalToday } from './core/festivals'
+import { fanfare } from './core/sound'
 
 /** 预渲染的经文是构建期的静态兜底（SEO/无 JS 可见）；
     每次打开或刷新页面，挂载后立刻换成一句随机经文（离线则保留原文） */
@@ -111,6 +114,16 @@ export function mountTerminal(): void {
     historyList: () => history.all(),
   }
 
+  // seasonal palette auto-applies on its date — unless the visitor picked one
+  const festival = festivalToday()
+  let savedTheme: string | null = null
+  try {
+    savedTheme = localStorage.getItem('gods:theme')
+  } catch {
+    /* private mode */
+  }
+  if (festival && !savedTheme) document.documentElement.dataset.theme = festival.theme
+
   const ui = createTerminalUi({
     root,
     ctx,
@@ -119,9 +132,31 @@ export function mountTerminal(): void {
     historyNext: () => history.next(),
     onEffect: (effect) => {
       if (effect === 'matrix') startMatrixRain()
+      else if (effect === 'fireworks') startFireworks()
     },
   })
-  void ui.start()
+  void ui.start().then(() => {
+    // birthday easter egg: Oct 21-23, once per session (unless reduced-motion)
+    if (festival?.egg === 'birthday') {
+      let seen = false
+      try {
+        seen = sessionStorage.getItem('gods:bday') === '1'
+      } catch {
+        /* ignore */
+      }
+      if (!seen) {
+        ui.printHtml('<span class="out-name">✦ ✦ ✦  HAPPY BIRTHDAY, Evil0ctal  ✦ ✦ ✦</span>', 'line-success')
+        ui.printHtml('another lap around the sun. 🎂  (type <button type="button" class="cmd-link" data-cmd="birthday">birthday</button> to relight the sky)', 'line-muted')
+        startFireworks()
+        fanfare()
+        try {
+          sessionStorage.setItem('gods:bday', '1')
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  })
   syncThemeColor()
   void refreshVotd()
   printConsoleBanner()

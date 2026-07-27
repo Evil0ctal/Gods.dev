@@ -19,6 +19,7 @@ const VOICES: Record<SoundKind, [number, number, OscillatorType]> = {
   lose: [140, 320, 'square'],
   error: [180, 120, 'square'],
   boot: [523, 140, 'triangle'],
+  pop: [740, 90, 'triangle'],
 }
 
 let enabled = false
@@ -68,3 +69,36 @@ export function beep(kind: SoundKind): void {
     /* audio unavailable — stay silent */
   }
 }
+
+/** play a sequence of frequencies (Hz) as short notes; no-op when disabled */
+export function melody(freqs: number[], noteMs = 130): void {
+  if (!enabled) return
+  try {
+    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+    if (!AC) return
+    ctx ??= new AC()
+    if (ctx.state === 'suspended') void ctx.resume()
+    const step = noteMs / 1000
+    freqs.forEach((freq, i) => {
+      const osc = ctx!.createOscillator()
+      const gain = ctx!.createGain()
+      const t = ctx!.currentTime + i * step
+      osc.type = 'triangle'
+      osc.frequency.setValueAtTime(freq, t)
+      gain.gain.setValueAtTime(0.07, t)
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + step)
+      osc.connect(gain).connect(ctx!.destination)
+      osc.start(t)
+      osc.stop(t + step)
+    })
+  } catch {
+    /* stay silent */
+  }
+}
+
+// original arpeggios — not derived from any tune
+const NOTE = { C5: 523, E5: 659, G5: 784, C6: 1047, G4: 392 }
+/** celebratory rising run — used on flag capture / birthday */
+export const fanfare = () => melody([NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6], 120)
+/** soft two-note power-on chime — used at boot */
+export const bootJingle = () => melody([NOTE.G4, NOTE.C5], 150)
