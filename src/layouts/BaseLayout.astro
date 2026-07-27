@@ -26,6 +26,10 @@ const ogImageAbs = new URL(ogImage, SITE.url).href
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#16161e" />
+    {/* preload the terminal font so the above-the-fold logo paints in Cascadia
+        Mono, not a fallback (crossorigin is required even same-origin: font
+        fetches are always CORS-anonymous, so the preload must match) */}
+    <link rel="preload" href="/fonts/CascadiaMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
     {noindex && <meta name="robots" content="noindex" />}
     <meta property="og:title" content={title} />

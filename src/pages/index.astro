@@ -150,6 +150,15 @@ const personLd = {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    /* only overflow-y was declared, so per CSS the other axis computes to
+       `auto` — the body silently became a two-axis scroll container. On macOS
+       that x-scrollbar is a 0px auto-hiding overlay (invisible); on Windows it
+       is a classic ~17px bar pinned to the terminal's bottom edge. `clip` makes
+       the body permanently non-scrolling on x, so that bar can never appear;
+       `scrollbar-gutter: stable` reserves the vertical bar's width on every OS
+       so the inner content width is deterministic (no Windows-vs-mac drift). */
+    overflow-x: clip;
+    scrollbar-gutter: stable;
     /* chromium quirk: without a containment boundary, this flex-item scroll
        container's overflow leaks into the viewport's scroll area (phantom
        page scroll). contain:paint seals it. */
@@ -173,6 +182,11 @@ const personLd = {
   #term-prompt { color: var(--ok); white-space: nowrap; }
   #term-input {
     flex: 1;
+    /* a flex item defaults to min-width:auto (its intrinsic field width), which
+       on a narrow viewport keeps the input row from shrinking and pushes the
+       terminal body wider than the screen. 0 lets it shrink; typed text then
+       scrolls natively inside the field instead of widening the terminal. */
+    min-width: 0;
     background: transparent;
     border: none;
     outline: none;
@@ -184,6 +198,13 @@ const personLd = {
   #motd h1 { font-size: 1.15rem; margin: 0.8rem 0 0.3rem; }
   #motd p { margin: 0.4rem 0; }
 
+  /* make #motd a query container so the logo can size off the terminal's inner
+     width via 100cqi (content-box, already net of padding + reserved gutter) —
+     unlike 100vw, which ignores both and mis-sized the art on Windows. Scoped
+     to #motd (not the .term-body scroll container) to avoid touching its
+     flex/overflow behavior. */
+  #motd { container-type: inline-size; }
+
   /* logo: theme-aware vertical gradient fill + soft glow.
      text-shadow must be off — it would paint behind the transparent fill. */
   #motd .logo {
@@ -194,8 +215,11 @@ const personLd = {
     text-shadow: none;
     filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 45%, transparent));
     line-height: 1.25;
-    /* 62-col art: shrink to fit narrow screens (mono glyph ≈ 0.6em wide) */
-    font-size: min(1em, calc((100vw - 4.5rem) / 37.2));
+    /* 62-col art shrinks to fit narrow screens. 100cqi = #motd content-box
+       inline size; divisor 40 = 62 cols × ~0.645em, leaving headroom over
+       Cascadia Mono's 0.586em advance so the art always fits. The min(1em, …)
+       cap keeps the desktop logo at the full body font size. */
+    font-size: min(1em, calc(100cqi / 40));
   }
   #term-output :global(.term-line) { white-space: pre-wrap; word-break: break-word; min-height: 1.2em; }
 </style>

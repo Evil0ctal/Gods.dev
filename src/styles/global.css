@@ -1,6 +1,34 @@
 @import './themes.css';
 
-:root { color-scheme: dark; }
+/* Cascadia Mono (SIL OFL 1.1, © Microsoft — see /fonts/LICENSE-CascadiaMono.txt).
+   Self-hosted and placed first in the stack so the terminal art — the gods.dev
+   logo and boot bar are tiled from box-drawing (U+2500–257F) and block
+   (U+2580–259F) glyphs — renders identically on every OS. Without a bundled
+   font these fell back to SF Mono on macOS and Consolas on Windows, whose
+   different metrics distorted the logo and overflowed the terminal width.
+   The full (non-subset) file is used with no unicode-range so this font stays
+   authoritative for every glyph it covers. */
+@font-face {
+  font-family: 'Cascadia Mono';
+  src: url('/fonts/CascadiaMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cascadia Mono';
+  src: url('/fonts/CascadiaMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  /* one source of truth for the mono stack — Cascadia Mono first (bundled),
+     then the historical system fallbacks for any glyph it lacks (CJK, emoji…) */
+  --font-mono: 'Cascadia Mono', 'SFMono-Regular', 'JetBrains Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
 
 /* Shiki css-variables theme → mapped onto the site palette, so code
    highlighting is theme-aware (recolours with `theme crt`, `amber`, ...) */
@@ -25,10 +53,17 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: 'SFMono-Regular', 'JetBrains Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 15px;
   line-height: 1.55;
 }
+
+/* The UA stylesheet sets `font-family: monospace` DIRECTLY on these elements,
+   which beats the inherited body font — so without this the gods.dev logo
+   (<pre>) and blog code blocks (<pre>/<code>) would ignore Cascadia and fall
+   back to the OS default monospace (Menlo on macOS, Consolas on Windows),
+   leaving the exact per-OS art distortion this change is meant to fix. */
+pre, code, kbd, samp { font-family: var(--font-mono); }
 
 ::selection { background: var(--selection); }
 
