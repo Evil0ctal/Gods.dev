@@ -18,7 +18,7 @@ const studies = (await getCollection('study', ({ data }) => (import.meta.env.PRO
     <ul class="study-list">
       {studies.map((s) => (
         <li>
-          <span class="muted" aria-hidden="true">-rw-r--r--</span>
+          <span class="perms" aria-hidden="true">-rw-r--r--</span>
           <time datetime={s.data.pubDate.toISOString().slice(0, 10)} class="muted">
             {s.data.pubDate.toISOString().slice(0, 10)}
           </time>
@@ -38,8 +38,21 @@ const studies = (await getCollection('study', ({ data }) => (import.meta.env.PRO
 </BaseLayout>
 
 <style>
-  .study-list { list-style: none; padding: 0; }
-  .study-list li { display: flex; gap: 1rem; padding: 0.45rem 0; flex-wrap: wrap; }
+  .study-list { list-style: none; padding: 0; margin: 0.4rem 0 0; }
+  .study-list li {
+    display: grid;
+    grid-template-columns: 6.5rem 6.5rem 1fr;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+    padding: 0.45rem 0;
+  }
+  .study-list .perms { color: var(--fg-muted); white-space: nowrap; }
+  .study-list time { color: var(--fg-muted); white-space: nowrap; }
   .passage-line { margin: 0.15rem 0 0; font-size: 0.85rem; }
   h1 { font-size: 1.3rem; }
+
+  @media (max-width: 560px) {
+    .study-list li { grid-template-columns: 6.5rem 1fr; }
+    .study-list .perms { display: none; }
+  }
 </style>

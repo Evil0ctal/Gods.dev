@@ -25,7 +25,7 @@ for (const p of posts) {
         <ul class="post-list">
           {yearPosts.map((p) => (
             <li>
-              <span class="muted" aria-hidden="true">-rw-r--r--</span>
+              <span class="perms" aria-hidden="true">-rw-r--r--</span>
               <time datetime={p.data.pubDate.toISOString().slice(0, 10)} class="muted">
                 {p.data.pubDate.toISOString().slice(0, 10)}
               </time>
@@ -40,7 +40,22 @@ for (const p of posts) {
 </BaseLayout>
 
 <style>
-  .post-list { list-style: none; padding: 0; }
-  .post-list li { display: flex; gap: 1rem; padding: 0.25rem 0; flex-wrap: wrap; }
+  .post-list { list-style: none; padding: 0; margin: 0.4rem 0 0; }
+  /* ls -la row: fixed perms + date columns, title fills the rest */
+  .post-list li {
+    display: grid;
+    grid-template-columns: 6.5rem 6.5rem 1fr;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+    padding: 0.3rem 0;
+  }
+  .post-list .perms { color: var(--fg-muted); white-space: nowrap; }
+  .post-list time { color: var(--fg-muted); white-space: nowrap; }
   h1 { font-size: 1.3rem; }
+
+  /* narrow screens: drop the decorative perms column, keep date + title aligned */
+  @media (max-width: 560px) {
+    .post-list li { grid-template-columns: 6.5rem 1fr; }
+    .post-list .perms { display: none; }
+  }
 </style>
