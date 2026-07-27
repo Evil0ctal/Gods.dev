@@ -10,10 +10,12 @@ import { THEMES } from './commands/theme'
 import { createTerminalUi } from './ui/terminal-ui'
 import { startMatrixRain } from './ui/matrix-rain'
 import { startFireworks } from './ui/fireworks'
+import { startFestiveEffect } from './ui/festive-fx'
 import { listenKonami } from './ui/konami'
 import { printConsoleBanner } from './ui/console-banner'
 import { festivalToday } from './core/festivals'
 import { fanfare } from './core/sound'
+import { escapeHtml } from './core/utils'
 
 /** 预渲染的经文是构建期的静态兜底（SEO/无 JS 可见）；
     每次打开或刷新页面，挂载后立刻换成一句随机经文（离线则保留原文） */
@@ -136,25 +138,31 @@ export function mountTerminal(): void {
     },
   })
   void ui.start().then(() => {
-    // birthday easter egg: Oct 21-23, once per session (unless reduced-motion)
-    if (festival?.egg === 'birthday') {
-      let seen = false
-      try {
-        seen = sessionStorage.getItem('gods:bday') === '1'
-      } catch {
-        /* ignore */
-      }
-      if (!seen) {
-        ui.printHtml('<span class="out-name">✦ ✦ ✦  HAPPY BIRTHDAY, Evil0ctal  ✦ ✦ ✦</span>', 'line-success')
-        ui.printHtml('another lap around the sun. 🎂  (type <button type="button" class="cmd-link" data-cmd="birthday">birthday</button> to relight the sky)', 'line-muted')
-        startFireworks()
-        fanfare()
-        try {
-          sessionStorage.setItem('gods:bday', '1')
-        } catch {
-          /* ignore */
-        }
-      }
+    // seasonal effect on arrival — within the ±2 day window, once per session
+    if (!festival) return
+    const key = `gods:fx:${festival.id}`
+    let seen = false
+    try {
+      seen = sessionStorage.getItem(key) === '1'
+    } catch {
+      /* ignore */
+    }
+    if (seen) return
+    if (festival.egg === 'birthday') {
+      ui.printHtml('<span class="out-name">✦ ✦ ✦  HAPPY BIRTHDAY, Evil0ctal  ✦ ✦ ✦</span>', 'line-success')
+      ui.printHtml(
+        'another lap around the sun. 🎂  (type <button type="button" class="cmd-link" data-cmd="birthday">birthday</button> to relight the sky)',
+        'line-muted',
+      )
+      fanfare()
+    } else {
+      ui.printHtml(`${escapeHtml(festival.emoji)} ${escapeHtml(festival.greeting)}`, 'line-muted')
+    }
+    startFestiveEffect(festival.effect)
+    try {
+      sessionStorage.setItem(key, '1')
+    } catch {
+      /* ignore */
     }
   })
   syncThemeColor()

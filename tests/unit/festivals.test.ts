@@ -7,22 +7,26 @@ import { THEMES, SEASONAL_THEMES } from '../../src/components/terminal/commands/
 import { makeCtx } from './helpers'
 
 describe('activeFestival', () => {
-  it('fires the birthday egg across Oct 21-23 only', () => {
-    expect(activeFestival(10, 20)).toBeNull()
-    for (const d of [21, 22, 23]) {
+  it('fires the birthday egg across Oct 20-24 (anchor 22 ± 2)', () => {
+    expect(activeFestival(10, 19)).toBeNull()
+    for (const d of [20, 21, 22, 23, 24]) {
       const f = activeFestival(10, d)
-      expect(f?.id).toBe('birthday')
+      expect(f?.id, `oct ${d}`).toBe('birthday')
       expect(f?.egg).toBe('birthday')
       expect(f?.theme).toBe('birthday')
+      expect(f?.effect).toBe('fireworks')
     }
-    expect(activeFestival(10, 24)?.id).not.toBe('birthday')
+    expect(activeFestival(10, 25)?.id).not.toBe('birthday')
   })
-  it('detects the common holidays', () => {
+  it('detects the common holidays with a ±2 day window and an effect each', () => {
     expect(activeFestival(10, 31)?.id).toBe('halloween')
-    expect(activeFestival(12, 25)?.id).toBe('christmas')
-    expect(activeFestival(12, 31)?.id).toBe('newyear')
+    expect(activeFestival(11, 1)?.id).toBe('halloween') // 31 + 1, window wraps the month
+    expect(activeFestival(10, 31)?.effect).toBe('spooky')
+    expect(activeFestival(12, 25)?.effect).toBe('snow')
+    expect(activeFestival(12, 23)?.id).toBe('christmas')
+    expect(activeFestival(12, 31)?.id).toBe('newyear') // Jan 1 anchor, window wraps the year
     expect(activeFestival(1, 1)?.id).toBe('newyear')
-    expect(activeFestival(2, 14)?.id).toBe('valentine')
+    expect(activeFestival(2, 14)?.effect).toBe('hearts')
   })
   it('uses the lunar table when a year is given', () => {
     expect(activeFestival(2, 17, 2026)?.id).toBe('lunar')

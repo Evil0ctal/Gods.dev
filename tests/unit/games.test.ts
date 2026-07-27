@@ -7,8 +7,10 @@ import {
   newBoard, move, spawn, hasWon, isOver, renderBoard, twenty48Game, type Board,
 } from '../../src/components/terminal/core/games/twenty48'
 import { newAdventure, step, createAdventure } from '../../src/components/terminal/core/games/adventure'
+import { newDino, jump, tick as dinoTick, renderDino, dinoGame } from '../../src/components/terminal/core/games/dino'
+import { newFlappy, flap, tick as flappyTick, renderFlappy, flappyGame, FLAPPY_H } from '../../src/components/terminal/core/games/flappy'
 import { initSound, setSound, soundEnabled, beep } from '../../src/components/terminal/core/sound'
-import { snakeCmd, twenty48Cmd, adventureCmd, gamesCmd, soundCmd } from '../../src/components/terminal/commands/games'
+import { snakeCmd, twenty48Cmd, adventureCmd, gamesCmd, soundCmd, dinoCmd, flappyCmd } from '../../src/components/terminal/commands/games'
 import { makeCtx } from './helpers'
 
 // deterministic rng
@@ -156,6 +158,66 @@ describe('2048 logic', () => {
   })
 })
 
+describe('dino logic', () => {
+  it('starts on the ground and jumps off it', () => {
+    const s = newDino()
+    expect(s.onGround).toBe(true)
+    const j = jump(s)
+    expect(j.onGround).toBe(false)
+    expect(j.vy).toBeGreaterThan(0)
+  })
+  it('cannot double-jump in mid-air', () => {
+    const airborne = jump(newDino())
+    expect(jump(airborne)).toBe(airborne) // unchanged
+  })
+  it('a jump comes back down to the ground over several ticks', () => {
+    let s = jump(newDino())
+    expect(s.y).toBe(0)
+    for (let i = 0; i < 20 && !s.onGround; i++) s = dinoTick(s, () => 0.9)
+    expect(s.onGround).toBe(true)
+    expect(s.y).toBe(0)
+  })
+  it('renders a lane, ground and distance', () => {
+    const html = renderDino(newDino())
+    expect(html).toContain('game-grid')
+    expect(html).toContain('distance')
+  })
+  it('run() ends in a crash if the player never jumps', () => {
+    const h = fakeIO()
+    dinoGame().run(h.io)
+    for (let i = 0; i < 120 && !h.exited; i++) h.tick()
+    expect(h.exited).toBe(true)
+    expect(h.summary?.[0]?.kind).toBe('error')
+  })
+})
+
+describe('flappy logic', () => {
+  it('gravity pulls the bird down; a flap lifts it', () => {
+    const s = newFlappy(rng)
+    const fell = flappyTick(s, rng)
+    expect(fell.y).toBeGreaterThan(s.y)
+    expect(flap(s).vy).toBeLessThan(0)
+  })
+  it('dies when it hits the floor', () => {
+    let s = newFlappy(rng)
+    for (let i = 0; i < FLAPPY_H * 3 && !s.dead; i++) s = flappyTick(s, rng) // never flap
+    expect(s.dead).toBe(true)
+  })
+  it('renders walls, the bird and score', () => {
+    const html = renderFlappy(newFlappy(rng))
+    expect(html).toContain('game-grid')
+    expect(html).toContain('score')
+  })
+  it('run() draws and reacts to a flap key', () => {
+    const h = fakeIO()
+    flappyGame(rng).run(h.io)
+    const before = h.draws.length
+    h.key(' ')
+    h.tick()
+    expect(h.draws.length).toBeGreaterThan(before)
+  })
+})
+
 describe('adventure logic', () => {
   it('starts at the gate', () => {
     const s = newAdventure()
@@ -200,16 +262,18 @@ describe('sound', () => {
 
 describe('game commands', () => {
   const sync = (r: CommandResult | Promise<CommandResult>) => r as CommandResult
-  it('snake and 2048 launch a game; adventure launches a repl', () => {
+  it('snake / 2048 / dino / flappy launch a game; adventure launches a repl', () => {
     expect(sync(snakeCmd.run([], makeCtx())).game?.title).toBe('snake')
     expect(sync(twenty48Cmd.run([], makeCtx())).game?.title).toBe('2048')
+    expect(sync(dinoCmd.run([], makeCtx())).game?.title).toBe('dino')
+    expect(sync(flappyCmd.run([], makeCtx())).game?.title).toBe('flappy')
     expect(sync(adventureCmd.run([], makeCtx())).repl?.prompt).toBe('ascent>')
   })
   it('games launcher lists clickable games', () => {
     const text = sync(gamesCmd.run([], makeCtx())).lines.map((l) => l.text).join('\n')
-    expect(text).toContain('data-cmd="snake"')
-    expect(text).toContain('data-cmd="2048"')
-    expect(text).toContain('data-cmd="adventure"')
+    for (const id of ['snake', '2048', 'dino', 'flappy', 'adventure']) {
+      expect(text).toContain(`data-cmd="${id}"`)
+    }
   })
   it('sound command toggles on and off', () => {
     setSound(false)

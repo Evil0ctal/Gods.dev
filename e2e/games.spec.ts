@@ -25,6 +25,24 @@ test('snake enters game mode and quits back to the terminal', async ({ page }) =
   await expect(page.locator('#term-input')).toBeVisible()
 })
 
+test('dino enters game mode and quits', async ({ page }) => {
+  await run(page, 'dino')
+  await expect(page.locator('#game-screen .game-grid')).toBeVisible()
+  await expect(page.locator('#game-screen')).toContainText('distance')
+  await page.keyboard.press('q')
+  await expect(page.locator('#game-screen')).toHaveCount(0)
+  await expect(page.locator('#term-input')).toBeVisible()
+})
+
+test('flappy enters game mode and quits', async ({ page }) => {
+  await run(page, 'flappy')
+  await expect(page.locator('#game-screen .game-grid')).toBeVisible()
+  await expect(page.locator('#game-screen')).toContainText('score')
+  await page.keyboard.press('q')
+  await expect(page.locator('#game-screen')).toHaveCount(0)
+  await expect(page.locator('#term-input')).toBeVisible()
+})
+
 test('2048 renders a tile grid and quits', async ({ page }) => {
   await run(page, '2048')
   await expect(page.locator('#game-screen .game-2048 .tile').first()).toBeVisible()

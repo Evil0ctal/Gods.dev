@@ -1,6 +1,8 @@
 import type { Command } from '../core/types'
 import { snakeGame } from '../core/games/snake'
 import { twenty48Game } from '../core/games/twenty48'
+import { dinoGame } from '../core/games/dino'
+import { flappyGame } from '../core/games/flappy'
 import { createAdventure } from '../core/games/adventure'
 import { setSound, soundEnabled, beep } from '../core/sound'
 import { badge, cmdLink, headLine, htmlLine, line } from '../core/utils'
@@ -32,9 +34,29 @@ export const adventureCmd: Command = {
   },
 }
 
+export const dinoCmd: Command = {
+  name: 'dino',
+  description: 'endless runner — jump the cacti',
+  category: 'games',
+  run() {
+    return { lines: [line('starting dino ...', 'muted')], game: dinoGame() }
+  },
+}
+
+export const flappyCmd: Command = {
+  name: 'flappy',
+  description: 'flap through the gaps',
+  category: 'games',
+  run() {
+    return { lines: [line('starting flappy ...', 'muted')], game: flappyGame(Math.random) }
+  },
+}
+
 const GAMES: Array<[string, string]> = [
   ['snake', 'guide the snake, eat, grow, do not bite yourself'],
   ['2048', 'slide tiles, merge matching numbers, reach 2048'],
+  ['dino', 'endless runner — leap the cacti as they scroll in'],
+  ['flappy', 'flap through the gaps without touching the walls'],
   ['adventure', 'ASCENT — escape to the Summit, one command at a time'],
 ]
 
