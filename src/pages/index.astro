@@ -97,13 +97,6 @@ const personLd = {
         <span id="term-prompt">guest@gods.dev:~$</span>
         <input id="term-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="send" />
       </div>
-      <div id="term-chips" aria-label="Command suggestions">
-        <button type="button" class="cmd-link" data-cmd="help">help</button>
-        <button type="button" class="cmd-link" data-cmd="blog">blog</button>
-        <button type="button" class="cmd-link" data-cmd="projects">projects</button>
-        <button type="button" class="cmd-link" data-cmd="theme crt">theme</button>
-        <button type="button" class="cmd-link" data-cmd="neofetch">neofetch</button>
-      </div>
     </div>
   </main>
   <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts, studies, projects }).replaceAll('<', '\u003c')} />
@@ -205,22 +198,4 @@ const personLd = {
     font-size: min(1em, calc((100vw - 4.5rem) / 37.2));
   }
   #term-output :global(.term-line) { white-space: pre-wrap; word-break: break-word; min-height: 1.2em; }
-
-  /* mobile command-suggestion chips: hidden on fine-pointer (desktop) devices,
-     shown as tappable shortcuts on coarse-pointer (touch) devices */
-  #term-chips { display: none; }
-  @media (pointer: coarse) {
-    #term-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.7rem;
-    }
-    #term-chips .cmd-link {
-      padding: 0.35rem 0.7rem;
-      border: 1px solid color-mix(in srgb, var(--fg-muted) 40%, transparent);
-      border-radius: 999px;
-      text-decoration: none;
-    }
-  }
 </style>
