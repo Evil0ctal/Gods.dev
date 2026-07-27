@@ -155,29 +155,30 @@ export function createTerminalUi(opts: TerminalUiOptions) {
   async function start(): Promise<void> {
     const motd = output.querySelector<HTMLElement>('#motd')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let seen = false
+    // boot plays every load; `gods:booted` is a skip override tests set.
+    let forceSkip = false
     try {
-      seen = localStorage.getItem('gods:booted') === '1'
+      forceSkip = localStorage.getItem('gods:booted') === '1'
     } catch {
-      seen = false
+      forceSkip = false
     }
-    let skipped = reduced || seen
+    let skipped = reduced || forceSkip
     const skipNow = () => skipped
     const onSkip = () => (skipped = true)
 
     if (!skipped) {
       motd?.remove()
-      window.addEventListener('keydown', onSkip, { once: true })
-      window.addEventListener('pointerdown', onSkip, { once: true })
-      await playBoot(printHtml, skipNow)
+      const hint = document.createElement('div')
+      hint.className = 'term-line boot-line boot-skip-hint'
+      hint.textContent = 'press any key to skip'
+      output.appendChild(hint)
+      window.addEventListener('keydown', onSkip)
+      window.addEventListener('pointerdown', onSkip)
+      await playBoot({ output, skip: skipNow })
       window.removeEventListener('keydown', onSkip)
       window.removeEventListener('pointerdown', onSkip)
+      output.querySelectorAll('.boot-line').forEach((el) => el.remove())
       if (motd) output.appendChild(motd)
-      try {
-        localStorage.setItem('gods:booted', '1')
-      } catch {
-        // ignore — privacy mode / storage disabled
-      }
     }
 
     refreshPrompt()
