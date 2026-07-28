@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('gods:booted', '1'))
+  await page.addInitScript(() => sessionStorage.setItem('gods:booted', '1'))
   await page.goto('/')
 })
 

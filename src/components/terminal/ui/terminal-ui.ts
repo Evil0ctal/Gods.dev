@@ -234,10 +234,16 @@ export function createTerminalUi(opts: TerminalUiOptions) {
     initSound()
     const motd = output.querySelector<HTMLElement>('#motd')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    // boot plays every load; `gods:booted` is a skip override tests set.
+    // boot plays every load; `gods:booted` is a test-only skip override.
+    // Read it from sessionStorage, NOT localStorage: a localStorage flag left
+    // behind by testing against the live domain persists forever and silently
+    // disables the boot animation on every future visit. sessionStorage lives
+    // only for the tab a test sets it in and production never writes it, so a
+    // real visitor can never get stuck — and this build no longer reads any
+    // stale localStorage flag, so already-affected browsers self-heal.
     let forceSkip = false
     try {
-      forceSkip = localStorage.getItem('gods:booted') === '1'
+      forceSkip = sessionStorage.getItem('gods:booted') === '1'
     } catch {
       forceSkip = false
     }
