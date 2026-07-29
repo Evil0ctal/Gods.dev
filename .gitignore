@@ -7,3 +7,9 @@ test-results/
 .DS_Store
 .idea/
 *.log
+
+# local / agent working files — never publish to the public repo
+docs/
+.claude/
+.superpowers/
+.worktrees/
