@@ -1,6 +1,6 @@
 import type { PostMeta, VfsDir, VfsNode } from './types'
 import { CLASSIC_PASSAGES } from '../../../data/passages'
-import { FORGE_JS, OLYMPUS_ACCESS_LOG, SCROLL_OF_HERMES, SIGNER_JS, UNSEEN_TXT, WHISPER_SAMPLES } from './ctf-artifacts'
+import { CHECKLICENSE_JS, FORGE_JS, OLYMPUS_ACCESS_LOG, SCROLL_OF_HERMES, SIGNER_JS, UNSEEN_TXT, WHISPER_SAMPLES } from './ctf-artifacts'
 import { FRAG3 } from '../../../data/ascension'
 
 const PROPHECY = `an old god left this behind. it does not want to be read — it wants to be earned.
@@ -102,6 +102,7 @@ run 'ctf' in the terminal for the full board.`,
             children: {
               'forge.js': { type: 'file', content: FORGE_JS },
               'signer.js': { type: 'file', content: SIGNER_JS },
+              'checklicense.js': { type: 'file', content: CHECKLICENSE_JS },
             },
           },
         },

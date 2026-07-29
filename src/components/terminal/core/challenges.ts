@@ -175,6 +175,23 @@ export const CHALLENGES: Challenge[] = [
       "parse the numbers, then bits -> 8-bit groups -> parseInt(group, 2) -> String.fromCharCode. It reads as gods{...}.",
     ],
   },
+  {
+    id: 'apk-keygen',
+    name: 'The Licensed App',
+    category: 'reversing',
+    difficulty: 'hard',
+    points: 200,
+    track: 'field-ops',
+    sha256: '75317fb5057ce70bc762ec4a4a08b588690dc2073ba2b440763bb4a9be8642c6',
+    where: 'cat /opt/olympus/checklicense.js',
+    prompt:
+      'A cracked APK sits in /opt/olympus: checklicense.js, lifted straight out of com.olympus.gate. It phones no server — the whole license check runs on the device, which was its first mistake. The key that makes checkLicense() return true is the flag. Write the keygen the vendor was afraid you would.',
+    hints: [
+      'Read checklicense.js. Each character is checked independently: (((key[i] + i*3) ^ 0x5a) & 0xff) must equal TARGET[i]. Position-dependent, but per-character — so invert it per character.',
+      'XOR is its own inverse and the +i*3 is undone by -i*3 (mod 256): key[i] = ((TARGET[i] ^ 0x5a) - i*3) & 0xff.',
+      'Map TARGET to characters with that formula and join. It reads as gods{...}. (& 0xff on a negative in JS already wraps mod 256.)',
+    ],
+  },
 ]
 
 export type ChallengeTrackMeta = { id: ChallengeTrack; label: string; blurb: string }

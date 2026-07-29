@@ -10,6 +10,7 @@ import {
   totalPoints,
 } from '../core/challenges'
 import type { Challenge } from '../core/challenges'
+import { earnedBadges, earnedCount } from '../core/badges'
 import { badge, cmdLink, escapeHtml, htmlLine, line } from '../core/utils'
 import type { BadgeVariant } from '../core/utils'
 
@@ -57,7 +58,30 @@ function listView(solved: string[]) {
       ...scoreboardLines(solved),
       ...sections,
       line(''),
+      htmlLine(
+        `<span class="line-muted">badges</span> <span class="line-success">${earnedCount(solved)}</span><span class="muted">/${earnedBadges(solved).length}</span> <span class="line-muted">earned  ·</span> ${cmdLink('ctf badges', 'ctf badges')}`,
+      ),
       line('details  →  ctf <id>   ·   submit  →  flag submit gods{...}', 'muted'),
+    ],
+  }
+}
+
+function badgesView(solved: string[]) {
+  const badges = earnedBadges(solved)
+  const got = badges.filter((b) => b.earned).length
+  const rows = badges.map((b) => {
+    if (b.earned) {
+      return htmlLine(`  <span class="line-success">${escapeHtml(b.icon)} ${escapeHtml(b.label)}</span> <span class="line-muted">— ${escapeHtml(b.desc)}</span>`)
+    }
+    return htmlLine(`  <span class="line-muted">🔒 ${escapeHtml(b.label)} — ${escapeHtml(b.desc)}</span>`)
+  })
+  return {
+    lines: [
+      htmlLine(`<span class="out-head">badges</span> <span class="muted">— ${got}/${badges.length} earned</span>`),
+      line(''),
+      ...rows,
+      line(''),
+      htmlLine(`back to the board: ${cmdLink('ctf', 'ctf')}`),
     ],
   }
 }
@@ -124,6 +148,7 @@ export const ctfCmd: Command = {
     const solved = ctx.ctf.solved()
     if (args.length === 0) return listView(solved)
     const sub = args[0]!.toLowerCase()
+    if (sub === 'badges' || sub === 'badge') return badgesView(solved)
     if (sub === 'scoreboard' || sub === 'score') {
       return {
         lines: [

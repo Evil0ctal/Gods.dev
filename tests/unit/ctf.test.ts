@@ -10,6 +10,7 @@ import {
 } from '../../src/components/terminal/core/challenges'
 import { sha256Hex } from '../../src/components/terminal/core/flags'
 import {
+  CHECKLICENSE_JS,
   FORGE_JS,
   OLYMPUS_ACCESS_LOG,
   SCROLL_OF_HERMES,
@@ -17,6 +18,7 @@ import {
   UNSEEN_TXT,
   WHISPER_SAMPLES,
 } from '../../src/components/terminal/core/ctf-artifacts'
+import { earnedBadges, earnedCount } from '../../src/components/terminal/core/badges'
 import { ctfCmd } from '../../src/components/terminal/commands/ctf'
 import { makeCtx, makeMemoryCtf } from './helpers'
 
@@ -86,6 +88,13 @@ function decodeSigner(src: string): string {
     ks.push(h & 0xff)
   }
   return vault.map((b, i) => String.fromCharCode(b ^ ks[i % ks.length]!)).join('')
+}
+
+// FIELD OPS: invert the license check per character.
+function decodeLicense(src: string): string {
+  const body = /TARGET = \[([\s\S]*?)\]/.exec(src)![1]!
+  const target = JSON.parse(`[${body}]`) as number[]
+  return target.map((t, i) => String.fromCharCode(((t ^ 0x5a) - i * 3) & 0xff)).join('')
 }
 
 // FIELD OPS: LSB of each sample, MSB-first, 8 to a byte.
@@ -169,12 +178,15 @@ describe('challenge integrity — artifacts decode to the registered flag hash',
   it('whisper-noise: LSB stego over PCM samples', async () => {
     await assertYields('whisper-noise', decodeWhisper(WHISPER_SAMPLES))
   })
+  it('apk-keygen: invert the Dalvik license check', async () => {
+    await assertYields('apk-keygen', decodeLicense(CHECKLICENSE_JS))
+  })
 })
 
 // ── no plaintext flag leaks in the shipped artifacts ─────────────────
 describe('artifacts do not leak plaintext flags', () => {
   it('no artifact string literally contains gods{', () => {
-    for (const s of [SCROLL_OF_HERMES, FORGE_JS, UNSEEN_TXT, OLYMPUS_ACCESS_LOG, SIGNER_JS, WHISPER_SAMPLES]) {
+    for (const s of [SCROLL_OF_HERMES, FORGE_JS, UNSEEN_TXT, OLYMPUS_ACCESS_LOG, SIGNER_JS, WHISPER_SAMPLES, CHECKLICENSE_JS]) {
       expect(s).not.toContain('gods{')
     }
     for (const c of CHALLENGES) if (c.artifact) expect(c.artifact).not.toContain('gods{')
@@ -187,7 +199,7 @@ describe('ctf command', () => {
     const res = await ctfCmd.run([], makeCtx())
     const text = res.lines.map((l) => l.text).join('\n')
     expect(text).toContain('gods.dev CTF')
-    expect(text).toContain('/1175 pts')
+    expect(text).toContain('/1375 pts')
     expect(text).toContain('FIELD OPS')
     for (const c of CHALLENGES) expect(text).toContain(`ctf ${c.id}`)
   })
@@ -221,5 +233,37 @@ describe('ctf command', () => {
   })
   it('is registered under the ctf category', () => {
     expect(ctfCmd.category).toBe('ctf')
+  })
+})
+
+describe('badges', () => {
+  it('first-blood on the first solve; god only when all are solved', () => {
+    expect(earnedCount([])).toBe(0)
+    const one = earnedBadges([orderedChallenges()[0]!.id])
+    expect(one.find((b) => b.id === 'first-blood')?.earned).toBe(true)
+    expect(one.find((b) => b.id === 'god')?.earned).toBe(false)
+    const all = earnedBadges(CHALLENGES.map((c) => c.id))
+    expect(all.find((b) => b.id === 'god')?.earned).toBe(true)
+    expect(all.every((b) => b.earned)).toBe(true)
+  })
+  it('field-ops-clear needs every field-ops flag, independent of recon', () => {
+    const fieldOps = CHALLENGES.filter((c) => c.track === 'field-ops').map((c) => c.id)
+    const b = earnedBadges(fieldOps)
+    expect(b.find((x) => x.id === 'field-ops-clear')?.earned).toBe(true)
+    expect(b.find((x) => x.id === 'recon-clear')?.earned).toBe(false)
+  })
+})
+
+describe('ctf badges view', () => {
+  it('lists badges and marks earned ones', async () => {
+    const res = await ctfCmd.run(['badges'], makeCtx({ ctf: makeMemoryCtf(CHALLENGES.map((c) => c.id)) }))
+    const text = res.lines.map((l) => l.text).join('\n')
+    expect(text).toContain('badges')
+    expect(text).toContain('First Blood')
+    expect(text).toContain('God of gods.dev')
+  })
+  it('the board nudges toward badges', async () => {
+    const res = await ctfCmd.run([], makeCtx())
+    expect(res.lines.map((l) => l.text).join('\n')).toContain('ctf badges')
   })
 })

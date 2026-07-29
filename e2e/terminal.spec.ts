@@ -142,10 +142,16 @@ test('study command lists notes and navigates to an article', async ({ page }) =
 test('ctf lists the challenge board with a scoreboard', async ({ page }) => {
   await run(page, 'ctf')
   await expect(page.locator('#term-output')).toContainText('gods.dev CTF')
-  await expect(page.locator('#term-output')).toContainText('0/1175 pts')
+  await expect(page.locator('#term-output')).toContainText('0/1375 pts')
   await expect(page.locator('#term-output')).toContainText('FIELD OPS')
   await expect(page.locator('#term-output .cmd-link[data-cmd="ctf scroll-of-hermes"]')).toBeVisible()
   await expect(page.locator('#term-output .cmd-link[data-cmd="ctf bogus-signer"]')).toBeVisible()
+})
+
+test('ctf badges grid lists achievements', async ({ page }) => {
+  await run(page, 'ctf badges')
+  await expect(page.locator('#term-output')).toContainText('First Blood')
+  await expect(page.locator('#term-output')).toContainText('God of gods.dev')
 })
 
 test('ctf challenge detail shows prompt and hints', async ({ page }) => {
