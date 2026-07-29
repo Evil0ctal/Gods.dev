@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css'
 import { SITE } from '../config/site'
+import { BUILD } from '../config/build'
 
 interface Props {
   title: string
@@ -64,7 +65,9 @@ const ogImageAbs = new URL(ogImage, SITE.url).href
         <a href="/ctf/">ctf</a> · <a href="/about/">about</a> · <a href="/projects/">projects</a> ·
         <a href={SITE.github}>github</a> · <a href="/rss.xml">rss</a>
       </nav>
-      <p>© 2026 <a href={SITE.github}>{SITE.name}</a></p>
+      <p>© 2026 <a href={SITE.github}>{SITE.name}</a>{BUILD.sha !== 'dev' && (
+        <span class="muted"> · built <a href={`https://github.com/Evil0ctal/Gods.dev/commit/${BUILD.sha}`}>{BUILD.sha}</a>{BUILD.date && ` · ${BUILD.date.slice(0, 10)}`}</span>
+      )}</p>
     </footer>
   </body>
 </html>

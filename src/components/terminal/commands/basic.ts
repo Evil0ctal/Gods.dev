@@ -1,5 +1,6 @@
 import type { Command } from '../core/types'
 import { escapeHtml, htmlLine, line } from '../core/utils'
+import { timeQuip } from '../core/timequip'
 
 export const echoCmd: Command = {
   name: 'echo',
@@ -30,7 +31,11 @@ export const dateCmd: Command = {
   description: 'current date and time',
   category: 'shell',
   run() {
-    return { lines: [line(new Date().toString())] }
+    const now = new Date()
+    const lines = [line(now.toString())]
+    const quip = timeQuip(now)
+    if (quip) lines.push(line(quip, 'muted'))
+    return { lines }
   },
 }
 

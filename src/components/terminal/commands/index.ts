@@ -11,6 +11,7 @@ import { ctfCmd } from './ctf'
 import { gamesCmd, snakeCmd, twenty48Cmd, adventureCmd, soundCmd, birthdayCmd, fireworksCmd, dinoCmd, flappyCmd } from './games'
 import { sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd } from './eggs'
 import { tracerouteCmd, nmapCmd, inspectCmd, fingerprintCmd } from './recon'
+import { buildCmd, whatsnewCmd, usesCmd } from './meta'
 
 export function registerAll(reg: CommandRegistry): void {
   const commands = [
@@ -18,6 +19,7 @@ export function registerAll(reg: CommandRegistry): void {
     themeCmd, neofetchCmd, clearCmd, historyCmd, echoCmd, dateCmd, soundCmd,
     lsCmd, cdCmd, catCmd, bibleCmd, studyCmd, ctfCmd,
     tracerouteCmd, nmapCmd, inspectCmd, fingerprintCmd,
+    buildCmd, whatsnewCmd, usesCmd,
     gamesCmd, snakeCmd, twenty48Cmd, dinoCmd, flappyCmd, adventureCmd, birthdayCmd, fireworksCmd,
     flagCmd, sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd,
     { ...contactCmd, name: 'social', hidden: true },
