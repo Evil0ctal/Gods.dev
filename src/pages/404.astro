@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import TerminalWindow from '../components/TerminalWindow.astro'
+import { FRAG2_HEX } from '../data/ascension'
 ---
 
 <BaseLayout title="404 — kernel panic" description="Page not found." noindex={true}>
@@ -14,11 +15,13 @@ Call Trace:
   [&lt;ffffffff89abcdef&gt;] wishful_thinking+0x0/0xdead
   [&lt;ffffffff8badf00d&gt;] http_404_handler+0x404/0x404
 
+RIP: 0010:ascend+0x2/0x3  core: {FRAG2_HEX}
 ---[ end trace 0000000000000404 ]---</pre>
     <p>The page you wanted is gone, was never here, or is hiding on purpose.</p>
     <p class="muted">
       (hiding on purpose is not hypothetical on this site. the terminal at
-      <a class="term-link" href="/">gods.dev</a> knows things. dotfiles, prophecies, flags...)
+      <a class="term-link" href="/">gods.dev</a> knows things. dotfiles, prophecies, flags...
+      that "core" above is hex for a reason — ascension fragment 2 of 3.)
     </p>
     <p><a class="term-link" href="/">reboot → /</a></p>
   </TerminalWindow>

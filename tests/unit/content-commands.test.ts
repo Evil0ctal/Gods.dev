@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { aboutCmd, projectsCmd, contactCmd, blogCmd } from '../../src/components/terminal/commands/content'
-import { themeCmd, THEMES } from '../../src/components/terminal/commands/theme'
+import { themeCmd, CORE_THEMES, SEASONAL_THEMES } from '../../src/components/terminal/commands/theme'
 import { neofetchCmd } from '../../src/components/terminal/commands/neofetch'
 import { makeCtx } from './helpers'
 
@@ -67,8 +67,9 @@ describe('blog', () => {
 describe('theme', () => {
   it('lists themes when called bare, marking the current one', async () => {
     const text = (await themeCmd.run([], makeCtx())).lines.map((l) => l.text).join('\n')
-    for (const t of THEMES) expect(text).toContain(t)
+    for (const t of [...CORE_THEMES, ...SEASONAL_THEMES]) expect(text).toContain(t)
     expect(text).toContain('default (current)')
+    expect(text).not.toContain('aureus') // secret theme, unlocked via the ARG
   })
   it('switches to a valid theme via ctx.setTheme', async () => {
     const ctx = makeCtx()

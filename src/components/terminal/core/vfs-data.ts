@@ -1,6 +1,7 @@
 import type { PostMeta, VfsDir, VfsNode } from './types'
 import { CLASSIC_PASSAGES } from '../../../data/passages'
 import { FORGE_JS, OLYMPUS_ACCESS_LOG, SCROLL_OF_HERMES, SIGNER_JS, UNSEEN_TXT, WHISPER_SAMPLES } from './ctf-artifacts'
+import { FRAG3 } from '../../../data/ascension'
 
 const PROPHECY = `an old god left this behind. it does not want to be read — it wants to be earned.
 
@@ -123,6 +124,26 @@ run 'ctf' in the terminal for the full board.`,
         type: 'dir',
         children: {
           motd: { type: 'file', content: 'gods.dev — the terminal is the interface.' },
+        },
+      },
+      proc: {
+        type: 'dir',
+        children: {
+          '1': {
+            type: 'dir',
+            children: { cmdline: { type: 'file', content: '/sbin/olympus-init --boot --quiet' } },
+          },
+          // the ascend daemon idles here, waiting for a wanderer to bring it the word
+          '1337': {
+            type: 'dir',
+            children: {
+              cmdline: { type: 'file', content: `ascend --await-fragments --frag3=${FRAG3}` },
+              status: {
+                type: 'file',
+                content: `Name:\tascend\nState:\tS (waiting for the observant)\nHint:\tascension fragment 3/3 rides in my cmdline. two others hide in the console and in a 404.`,
+              },
+            },
+          },
         },
       },
     },

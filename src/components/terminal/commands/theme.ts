@@ -3,7 +3,9 @@ import { cmdLink, htmlLine, line } from '../core/utils'
 
 export const CORE_THEMES = ['default', 'crt', 'amber', 'light'] as const
 export const SEASONAL_THEMES = ['birthday', 'halloween', 'christmas', 'newyear', 'lunar', 'valentine'] as const
-export const THEMES = [...CORE_THEMES, ...SEASONAL_THEMES] as const
+/** unlocked by the ASCENSION arg — a valid theme, but never shown in the menu */
+export const SECRET_THEMES = ['aureus'] as const
+export const THEMES = [...CORE_THEMES, ...SEASONAL_THEMES, ...SECRET_THEMES] as const
 export type ThemeName = (typeof THEMES)[number]
 
 const DESCRIPTIONS: Record<string, string> = {

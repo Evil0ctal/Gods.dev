@@ -102,6 +102,13 @@
   --accent: #ff4d80; --accent-2: #ff9ec4; --ok: #7ef0b0; --err: #ff5566; --warn: #ffb3c9;
   --glow: rgba(255, 77, 128, 0.45); --selection: #5a1f38;
 }
+/* aureus — the secret gold theme, unlocked only by ascending (see the ARG) */
+:root[data-theme='aureus'] {
+  --bg: #14100a; --bg-elev: #1f1810; --bg-titlebar: #0f0b06;
+  --fg: #ffe9a8; --fg-muted: #9c7f42;
+  --accent: #ffd24a; --accent-2: #fff1b0; --ok: #ffd24a; --err: #ff7a5c; --warn: #ffe08a;
+  --glow: rgba(255, 210, 74, 0.5); --selection: #4d3a12;
+}
 
 /* CRT extras: phosphor glow + scanlines (reduced-motion drops the flicker) */
 :root[data-theme='crt'] body,

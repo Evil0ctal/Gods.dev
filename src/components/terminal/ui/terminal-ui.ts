@@ -5,6 +5,7 @@ import { displayPath } from '../core/vfs'
 import { escapeHtml } from '../core/utils'
 import { playBoot } from './boot'
 import { beep, initSound } from '../core/sound'
+import { ASCENDED_KEY } from '../../../data/ascension'
 
 export interface TerminalUiOptions {
   root: HTMLElement
@@ -63,7 +64,13 @@ export function createTerminalUi(opts: TerminalUiOptions) {
 
   function refreshPrompt(): void {
     const path = displayPath(opts.ctx.cwd)
-    promptEl.textContent = `guest@gods.dev:${path}$`
+    let crown = ''
+    try {
+      if (localStorage.getItem(ASCENDED_KEY) === '1') crown = '✦ '
+    } catch {
+      /* private mode */
+    }
+    promptEl.textContent = `${crown}guest@gods.dev:${path}$`
     if (titleEl) titleEl.textContent = `guest@gods.dev: ${path}`
   }
 

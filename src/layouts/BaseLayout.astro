@@ -49,7 +49,7 @@ const ogImageAbs = new URL(ogImage, SITE.url).href
       // theme before first paint — no FOUC
       try {
         var t = localStorage.getItem('gods:theme')
-        var ok = ['default', 'crt', 'amber', 'light', 'birthday', 'halloween', 'christmas', 'newyear', 'lunar', 'valentine']
+        var ok = ['default', 'crt', 'amber', 'light', 'birthday', 'halloween', 'christmas', 'newyear', 'lunar', 'valentine', 'aureus']
         if (t && ok.indexOf(t) !== -1) {
           document.documentElement.dataset.theme = t
         }

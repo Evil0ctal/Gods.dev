@@ -13,6 +13,7 @@ import { sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd } from './eggs'
 import { tracerouteCmd, nmapCmd, inspectCmd, fingerprintCmd } from './recon'
 import { buildCmd, whatsnewCmd, usesCmd } from './meta'
 import { statsCmd } from './stats'
+import { ascendCmd } from './ascend'
 
 export function registerAll(reg: CommandRegistry): void {
   const commands = [
@@ -22,7 +23,7 @@ export function registerAll(reg: CommandRegistry): void {
     tracerouteCmd, nmapCmd, inspectCmd, fingerprintCmd,
     buildCmd, whatsnewCmd, usesCmd, statsCmd,
     gamesCmd, snakeCmd, twenty48Cmd, dinoCmd, flappyCmd, adventureCmd, birthdayCmd, fireworksCmd,
-    flagCmd, sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd,
+    flagCmd, sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd, ascendCmd,
     { ...contactCmd, name: 'social', hidden: true },
   ]
   for (const c of commands) reg.register(c)
