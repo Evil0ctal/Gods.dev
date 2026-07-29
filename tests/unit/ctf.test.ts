@@ -13,7 +13,9 @@ import {
   FORGE_JS,
   OLYMPUS_ACCESS_LOG,
   SCROLL_OF_HERMES,
+  SIGNER_JS,
   UNSEEN_TXT,
+  WHISPER_SAMPLES,
 } from '../../src/components/terminal/core/ctf-artifacts'
 import { ctfCmd } from '../../src/components/terminal/commands/ctf'
 import { makeCtx, makeMemoryCtf } from './helpers'
@@ -70,6 +72,32 @@ function decodeFerryman(log: string): string {
     .map((i) => chunks[i])
     .join('')
   return b64(joined)
+}
+
+// FIELD OPS: run the shipped signer on its own TARGET, then un-XOR the vault.
+function decodeSigner(src: string): string {
+  const target = /TARGET = "([^"]+)"/.exec(src)![1]!
+  const vaultBody = /vault = \[([\s\S]*?)\]/.exec(src)![1]!
+  const vault = JSON.parse(`[${vaultBody}]`) as number[]
+  let h = 5381
+  const ks: number[] = []
+  for (let i = 0; i < target.length; i++) {
+    h = ((h * 33) ^ target.charCodeAt(i)) >>> 0
+    ks.push(h & 0xff)
+  }
+  return vault.map((b, i) => String.fromCharCode(b ^ ks[i % ks.length]!)).join('')
+}
+
+// FIELD OPS: LSB of each sample, MSB-first, 8 to a byte.
+function decodeWhisper(src: string): string {
+  const nums = (src.match(/\d+/g) ?? []).map(Number)
+  let out = ''
+  for (let i = 0; i + 8 <= nums.length; i += 8) {
+    let byte = 0
+    for (let b = 0; b < 8; b++) byte = (byte << 1) | (nums[i + b]! & 1)
+    out += String.fromCharCode(byte)
+  }
+  return out
 }
 
 function decodeAegisToken(token: string): string {
@@ -135,12 +163,18 @@ describe('challenge integrity — artifacts decode to the registered flag hash',
     const token = findChallenge('alg-none-ascension')!.artifact!
     await assertYields('alg-none-ascension', decodeAegisToken(token))
   })
+  it('bogus-signer: run xbogus(TARGET), XOR the vault', async () => {
+    await assertYields('bogus-signer', decodeSigner(SIGNER_JS))
+  })
+  it('whisper-noise: LSB stego over PCM samples', async () => {
+    await assertYields('whisper-noise', decodeWhisper(WHISPER_SAMPLES))
+  })
 })
 
 // ── no plaintext flag leaks in the shipped artifacts ─────────────────
 describe('artifacts do not leak plaintext flags', () => {
   it('no artifact string literally contains gods{', () => {
-    for (const s of [SCROLL_OF_HERMES, FORGE_JS, UNSEEN_TXT, OLYMPUS_ACCESS_LOG]) {
+    for (const s of [SCROLL_OF_HERMES, FORGE_JS, UNSEEN_TXT, OLYMPUS_ACCESS_LOG, SIGNER_JS, WHISPER_SAMPLES]) {
       expect(s).not.toContain('gods{')
     }
     for (const c of CHALLENGES) if (c.artifact) expect(c.artifact).not.toContain('gods{')
@@ -153,7 +187,8 @@ describe('ctf command', () => {
     const res = await ctfCmd.run([], makeCtx())
     const text = res.lines.map((l) => l.text).join('\n')
     expect(text).toContain('gods.dev CTF')
-    expect(text).toContain('/825 pts')
+    expect(text).toContain('/1175 pts')
+    expect(text).toContain('FIELD OPS')
     for (const c of CHALLENGES) expect(text).toContain(`ctf ${c.id}`)
   })
   it('marks solved challenges in the list', async () => {

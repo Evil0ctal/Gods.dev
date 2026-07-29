@@ -1,6 +1,6 @@
 import type { PostMeta, VfsDir, VfsNode } from './types'
 import { CLASSIC_PASSAGES } from '../../../data/passages'
-import { FORGE_JS, OLYMPUS_ACCESS_LOG, SCROLL_OF_HERMES, UNSEEN_TXT } from './ctf-artifacts'
+import { FORGE_JS, OLYMPUS_ACCESS_LOG, SCROLL_OF_HERMES, SIGNER_JS, UNSEEN_TXT, WHISPER_SAMPLES } from './ctf-artifacts'
 
 const PROPHECY = `an old god left this behind. it does not want to be read — it wants to be earned.
 
@@ -82,6 +82,7 @@ export function createVfs(posts: PostMeta[], studies: PostMeta[] = []): VfsDir {
 run 'ctf' in the terminal for the full board.`,
                   },
                   scroll_of_hermes: { type: 'file', content: SCROLL_OF_HERMES },
+                  'whisper.samples': { type: 'file', content: WHISPER_SAMPLES },
                 },
               },
               '.secrets': {
@@ -97,7 +98,10 @@ run 'ctf' in the terminal for the full board.`,
         children: {
           olympus: {
             type: 'dir',
-            children: { 'forge.js': { type: 'file', content: FORGE_JS } },
+            children: {
+              'forge.js': { type: 'file', content: FORGE_JS },
+              'signer.js': { type: 'file', content: SIGNER_JS },
+            },
           },
         },
       },

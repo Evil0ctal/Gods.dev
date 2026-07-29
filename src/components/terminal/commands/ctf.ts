@@ -1,12 +1,15 @@
-import type { Command } from '../core/types'
+import type { Command, OutputLine } from '../core/types'
 import {
   CHALLENGES,
+  TRACKS,
+  challengeTrack,
   findChallenge,
   orderedChallenges,
   rankTitle,
   scoreOf,
   totalPoints,
 } from '../core/challenges'
+import type { Challenge } from '../core/challenges'
 import { badge, cmdLink, escapeHtml, htmlLine, line } from '../core/utils'
 import type { BadgeVariant } from '../core/utils'
 
@@ -23,23 +26,36 @@ function scoreboardLines(solved: string[]) {
   ]
 }
 
+function challengeRow(c: Challenge, done: boolean): OutputLine {
+  const mark = done ? '<span class="line-success">✓</span>' : '<span class="line-muted">○</span>'
+  const nameCls = done ? 'cmd-link out-name' : 'cmd-link'
+  const nameBtn = `<button type="button" class="${nameCls}" data-cmd="ctf ${escapeHtml(c.id)}">${escapeHtml(c.id.padEnd(20))}</button>`
+  const meta = `${badge(c.difficulty, c.difficulty as BadgeVariant)} ${badge(c.category, 'cat')} <span class="muted">${c.points}pt</span>`
+  return htmlLine(`  ${mark}  ${nameBtn}  ${meta}`)
+}
+
 function listView(solved: string[]) {
   const solvedSet = new Set(solved)
-  const rows = orderedChallenges().map((c) => {
-    const done = solvedSet.has(c.id)
-    const mark = done ? '<span class="line-success">✓</span>' : '<span class="line-muted">○</span>'
-    const nameCls = done ? 'cmd-link out-name' : 'cmd-link'
-    const nameBtn = `<button type="button" class="${nameCls}" data-cmd="ctf ${escapeHtml(c.id)}">${escapeHtml(c.id.padEnd(20))}</button>`
-    const meta = `${badge(c.difficulty, c.difficulty as BadgeVariant)} ${badge(c.category, 'cat')} <span class="muted">${c.points}pt</span>`
-    return htmlLine(`  ${mark}  ${nameBtn}  ${meta}`)
-  })
+  const ordered = orderedChallenges()
+  const sections: OutputLine[] = []
+  for (const t of TRACKS) {
+    const inTrack = ordered.filter((c) => challengeTrack(c) === t.id)
+    if (inTrack.length === 0) continue
+    const cleared = inTrack.filter((c) => solvedSet.has(c.id)).length
+    sections.push(line(''))
+    sections.push(
+      htmlLine(
+        `<span class="out-head">▸ ${escapeHtml(t.label)}</span> <span class="line-muted">${escapeHtml(t.blurb)}</span> <span class="muted">(${cleared}/${inTrack.length})</span>`,
+      ),
+    )
+    for (const c of inTrack) sections.push(challengeRow(c, solvedSet.has(c.id)))
+  }
   return {
     lines: [
       htmlLine('<span class="out-head">gods.dev CTF</span> <span class="muted">— capture flags hidden across the site. they look like</span> <span class="badge badge-cat">gods{...}</span>'),
       line(''),
       ...scoreboardLines(solved),
-      line(''),
-      ...rows,
+      ...sections,
       line(''),
       line('details  →  ctf <id>   ·   submit  →  flag submit gods{...}', 'muted'),
     ],

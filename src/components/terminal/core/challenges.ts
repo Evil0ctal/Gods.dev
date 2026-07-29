@@ -1,5 +1,6 @@
 export type ChallengeCategory = 'crypto' | 'web' | 'reversing' | 'stego' | 'forensics'
 export type ChallengeDifficulty = 'intro' | 'easy' | 'medium' | 'hard'
+export type ChallengeTrack = 'recon' | 'field-ops'
 
 export interface Challenge {
   id: string
@@ -7,6 +8,8 @@ export interface Challenge {
   category: ChallengeCategory
   difficulty: ChallengeDifficulty
   points: number
+  /** which track it belongs to; undefined = the original 'recon' track */
+  track?: ChallengeTrack
   /** SHA-256 of the plaintext flag. The plaintext lives nowhere in this repo. */
   sha256: string
   /** one-line pointer to where the puzzle material lives */
@@ -136,7 +139,54 @@ export const CHALLENGES: Challenge[] = [
       'Un-base64url the vault, XOR the bytes against ASCII "adminzeus" (repeating), and you get another base64 string. Decode THAT to read the flag.',
     ],
   },
+
+  // ── FIELD OPS: a second track, closer to the operator's real work ──
+  {
+    id: 'bogus-signer',
+    name: 'The Bogus Signer',
+    category: 'reversing',
+    difficulty: 'hard',
+    points: 175,
+    track: 'field-ops',
+    sha256: '3503556ce59b570b0d3c05c49ab31035f1ff82da861200edc83edab4db8cad49',
+    where: 'cat /opt/olympus/signer.js',
+    prompt:
+      'The gate signs every request to Olympus with an X-Bogus header — no secret key, just an algorithm nobody was meant to read. signer.js in /opt/olympus still carries it, and a vault it sealed under the signature of one canonical request. You need to guess nothing: sign the request the way the code does, then let the keystream fall away.',
+    hints: [
+      'Read /opt/olympus/signer.js. There is no password to find — xbogus(query) is deterministic. Run it on the TARGET string in the file.',
+      'xbogus returns a keystream, one byte per input character. The vault is XOR-sealed with it: vault[i] ^ ks[i % ks.length].',
+      "In the console: const ks = xbogus(TARGET); vault.map((b,i)=>String.fromCharCode(b^ks[i%ks.length])).join('') — that is the flag.",
+    ],
+  },
+  {
+    id: 'whisper-noise',
+    name: 'Whisper in the Noise',
+    category: 'stego',
+    difficulty: 'hard',
+    points: 175,
+    track: 'field-ops',
+    sha256: '36f21fd51121267c5687f583e824fe374775ccde686e6cef464b92f66a2a2e95',
+    where: 'cat ~/.ctf/whisper.samples',
+    prompt:
+      'The ASR tap in ~/.ctf/whisper.samples caught a stream the transcript came back empty on. The words are not in the audio — they are under it. Every sample carries one stolen bit in the place no one listens: the noise floor.',
+    hints: [
+      'Open ~/.ctf/whisper.samples. Those integers are PCM samples. The comment says where to look: the least-significant bit of each.',
+      'Take sample & 1 for every sample, in order. Group the bits eight at a time, most-significant bit first, and turn each group into a byte.',
+      "parse the numbers, then bits -> 8-bit groups -> parseInt(group, 2) -> String.fromCharCode. It reads as gods{...}.",
+    ],
+  },
 ]
+
+export type ChallengeTrackMeta = { id: ChallengeTrack; label: string; blurb: string }
+export const TRACKS: ChallengeTrackMeta[] = [
+  { id: 'recon', label: 'RECON', blurb: 'find the flags hidden across the site' },
+  { id: 'field-ops', label: 'FIELD OPS', blurb: "reverse the operator's real toolkit" },
+]
+
+/** a challenge's track, defaulting the original set to 'recon' */
+export function challengeTrack(c: Challenge): ChallengeTrack {
+  return c.track ?? 'recon'
+}
 
 /** 段位阶梯：按已得分点数递增，全清解锁最高称号 */
 const RANKS: Array<{ min: number; title: string }> = [
