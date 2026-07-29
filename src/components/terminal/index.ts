@@ -1,4 +1,4 @@
-import type { PostMeta, ProjectMeta, TerminalContext } from './core/types'
+import type { PostMeta, ProjectMeta, StatsMeta, TerminalContext } from './core/types'
 import type { BibleBook, BibleIndex } from './core/bible'
 import { extractVerses, pickRandom, refLabel } from './core/bible'
 import { createRegistry } from './core/registry'
@@ -82,10 +82,11 @@ export function mountTerminal(): void {
   const dataEl = document.getElementById('terminal-data')
   if (!root || !dataEl) return
 
-  const { posts = [], studies = [], projects = [] } = JSON.parse(dataEl.textContent ?? '{}') as {
+  const { posts = [], studies = [], projects = [], stats = null } = JSON.parse(dataEl.textContent ?? '{}') as {
     posts?: PostMeta[]
     studies?: PostMeta[]
     projects?: ProjectMeta[]
+    stats?: StatsMeta | null
   }
   const sorted = [...posts].sort((a, b) => b.date.localeCompare(a.date))
   const sortedStudies = [...studies].sort((a, b) => b.date.localeCompare(a.date))
@@ -111,6 +112,7 @@ export function mountTerminal(): void {
     posts: sorted,
     studies: sortedStudies,
     projects,
+    stats,
     ctf: createCtfStore(),
     registry,
     historyList: () => history.all(),

@@ -66,6 +66,16 @@ export interface ProjectMeta {
   updated?: string // YYYY-MM-DD
 }
 
+export interface StatsMeta {
+  publicRepos: number
+  followers: number
+  following: number
+  totalStars: number
+  languages: Array<{ name: string; count: number }>
+  latest: { name: string; date: string } | null
+  memberSince: string
+}
+
 export interface VfsFile { type: 'file'; content: string }
 export interface VfsDir { type: 'dir'; children: Record<string, VfsNode> }
 export type VfsNode = VfsFile | VfsDir
@@ -86,6 +96,7 @@ export interface TerminalContext {
   posts: PostMeta[]
   studies: PostMeta[]
   projects: ProjectMeta[]
+  stats: StatsMeta | null
   ctf: CtfStore
   registry: CommandRegistry
   historyList(): string[]

@@ -31,3 +31,10 @@ test('footer shows a build receipt with a commit link', async ({ page }) => {
   const receipt = page.locator('.site-footer').getByText(/built/i)
   await expect(receipt).toBeVisible()
 })
+
+test('stats shows GitHub numbers baked at build (or a graceful fallback)', async ({ page }) => {
+  await run(page, 'stats')
+  await expect(page.locator('#term-output')).toContainText('github · Evil0ctal')
+  // either real numbers with a languages bar, or the unavailable fallback — both mention the profile
+  await expect(page.locator('#term-output')).toContainText('github.com/Evil0ctal')
+})

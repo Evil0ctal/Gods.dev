@@ -1,4 +1,4 @@
-import type { ProjectMeta } from '../components/terminal/core/types'
+import type { ProjectMeta, StatsMeta } from '../components/terminal/core/types'
 import { PROJECTS as FALLBACK } from '../data/projects'
 
 const USER = 'Evil0ctal'
@@ -19,8 +19,47 @@ interface GhRepo {
   pushed_at: string | null
 }
 
-// module-level memo: one fetch per build, shared across every page that asks
-let cache: Promise<ProjectMeta[]> | null = null
+interface GhUser {
+  public_repos: number
+  followers: number
+  following: number
+  created_at: string
+}
+
+function ghHeaders(): Record<string, string> {
+  const token = process.env.GITHUB_TOKEN ?? process.env.PROJECTS_GITHUB_TOKEN
+  return {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'gods.dev-build',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
+// module-level memos: one fetch per build, shared across every page that asks
+let reposCache: Promise<GhRepo[] | null> | null = null
+let projectsCache: Promise<ProjectMeta[]> | null = null
+let statsCache: Promise<StatsMeta | null> | null = null
+
+function fetchRepos(): Promise<GhRepo[] | null> {
+  if (!reposCache) reposCache = loadRepos()
+  return reposCache
+}
+
+async function loadRepos(): Promise<GhRepo[] | null> {
+  try {
+    const res = await fetch(`https://api.github.com/users/${USER}/repos?per_page=100&sort=updated`, {
+      headers: ghHeaders(),
+    })
+    if (!res.ok) throw new Error(`GitHub API ${res.status} ${res.statusText}`)
+    const repos = (await res.json()) as GhRepo[]
+    if (!Array.isArray(repos)) throw new Error('unexpected GitHub response shape')
+    return repos
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(`[github] repo fetch failed: ${err instanceof Error ? err.message : String(err)}`)
+    return null
+  }
+}
 
 /**
  * Fetch the user's top public repositories at BUILD time and bake them into
@@ -28,43 +67,65 @@ let cache: Promise<ProjectMeta[]> | null = null
  * unreachable or rate-limited, so the build never fails.
  */
 export function getProjects(): Promise<ProjectMeta[]> {
-  if (!cache) cache = load()
-  return cache
+  if (!projectsCache) projectsCache = loadProjects()
+  return projectsCache
 }
 
-async function load(): Promise<ProjectMeta[]> {
-  const token = process.env.GITHUB_TOKEN ?? process.env.PROJECTS_GITHUB_TOKEN
+async function loadProjects(): Promise<ProjectMeta[]> {
+  const repos = await fetchRepos()
+  if (!repos) return FALLBACK
+  const projects = repos
+    .filter((r) => !r.fork && !r.archived && !r.private && !EXCLUDE.has(r.name))
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .slice(0, MAX_FEATURED)
+    .map(normalize)
+  if (projects.length === 0) return FALLBACK
+  // eslint-disable-next-line no-console
+  console.log(`[github] baked ${projects.length} repos for ${USER} (top by stars)`)
+  return projects
+}
+
+/** Aggregate profile + repo stats at build time for the `stats` command. */
+export function getStats(): Promise<StatsMeta | null> {
+  if (!statsCache) statsCache = loadStats()
+  return statsCache
+}
+
+async function loadStats(): Promise<StatsMeta | null> {
+  const repos = await fetchRepos()
+  if (!repos) return null
+  const owned = repos.filter((r) => !r.fork && !r.private)
   try {
-    const res = await fetch(
-      `https://api.github.com/users/${USER}/repos?per_page=100&sort=updated`,
-      {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          'User-Agent': 'gods.dev-build',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      },
-    )
-    if (!res.ok) throw new Error(`GitHub API ${res.status} ${res.statusText}`)
-    const repos = (await res.json()) as GhRepo[]
-    if (!Array.isArray(repos)) throw new Error('unexpected GitHub response shape')
+    const res = await fetch(`https://api.github.com/users/${USER}`, { headers: ghHeaders() })
+    const user = res.ok ? ((await res.json()) as GhUser) : null
 
-    const projects = repos
-      .filter((r) => !r.fork && !r.archived && !r.private && !EXCLUDE.has(r.name))
-      .sort((a, b) => b.stargazers_count - a.stargazers_count)
-      .slice(0, MAX_FEATURED)
-      .map(normalize)
+    const totalStars = owned.reduce((sum, r) => sum + r.stargazers_count, 0)
+    const langCount = new Map<string, number>()
+    for (const r of owned) if (r.language) langCount.set(r.language, (langCount.get(r.language) ?? 0) + 1)
+    const languages = [...langCount.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6)
 
-    if (projects.length === 0) throw new Error('no public repos returned')
+    const latestRepo = owned
+      .filter((r) => r.pushed_at)
+      .sort((a, b) => (b.pushed_at! < a.pushed_at! ? -1 : 1))[0]
+
     // eslint-disable-next-line no-console
-    console.log(`[github] baked ${projects.length} repos for ${USER} (top by stars)`)
-    return projects
+    console.log(`[github] baked stats for ${USER}: ${owned.length} repos, ${totalStars}★`)
+    return {
+      publicRepos: user?.public_repos ?? owned.length,
+      followers: user?.followers ?? 0,
+      following: user?.following ?? 0,
+      totalStars,
+      languages,
+      latest: latestRepo ? { name: latestRepo.name, date: latestRepo.pushed_at!.slice(0, 10) } : null,
+      memberSince: user?.created_at ? user.created_at.slice(0, 4) : '',
+    }
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.warn(
-      `[github] repo fetch failed, using static fallback: ${err instanceof Error ? err.message : String(err)}`,
-    )
-    return FALLBACK
+    console.warn(`[github] stats fetch failed: ${err instanceof Error ? err.message : String(err)}`)
+    return null
   }
 }
 

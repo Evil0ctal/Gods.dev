@@ -5,9 +5,10 @@ import { getCollection } from 'astro:content'
 import { SITE } from '../config/site'
 import { extractVerses, pickDaily, refLabel } from '../components/terminal/core/bible'
 import type { BibleBook, BibleIndex } from '../components/terminal/core/bible'
-import { getProjects } from '../lib/github'
+import { getProjects, getStats } from '../lib/github'
 
 const projects = await getProjects()
+const stats = await getStats()
 
 const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true)))
   .map((p) => ({
@@ -99,7 +100,7 @@ const personLd = {
       </div>
     </div>
   </main>
-  <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts, studies, projects }).replaceAll('<', '\u003c')} />
+  <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts, studies, projects, stats }).replaceAll('<', '\u003c')} />
   <script>
     import { mountTerminal } from '../components/terminal/index'
     mountTerminal()
