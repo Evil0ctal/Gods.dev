@@ -239,3 +239,41 @@ a:hover, .term-link:hover { color: var(--accent-2); }
   .term-window { margin: 0; border-radius: 0; border-inline: none; min-height: 100dvh; }
   html, body { font-size: 14px; }
 }
+
+/* ── "The Annotated Reverse" interactive widget (blog post) ────────── */
+.arev {
+  border: 1px solid color-mix(in srgb, var(--fg-muted) 40%, transparent);
+  border-radius: 8px;
+  background: var(--bg-elev);
+  padding: 0.9rem 1rem;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+.arev-head { color: var(--fg-muted); margin-bottom: 0.7rem; font-size: 0.82rem; }
+.arev-noise { color: var(--accent-2); }
+.arev-dump { overflow-x: auto; }
+.arev-row { display: flex; gap: 0.9rem; white-space: pre; line-height: 1.7; }
+.arev-off { color: var(--fg-muted); }
+.arev-hex .arev-b { color: var(--err); transition: color 0.12s ease; padding: 0 0.15ch; }
+.arev-hex .arev-b.revealed { color: var(--ok); }
+.arev-asc { color: var(--fg-muted); letter-spacing: 0.05ch; }
+.arev-asc .arev-a.revealed { color: var(--ok); font-weight: bold; }
+.arev-controls { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.9rem; flex-wrap: wrap; }
+.arev-slider { flex: 1 1 12rem; min-width: 8rem; accent-color: var(--accent); cursor: pointer; }
+.arev-count { color: var(--fg-muted); font-size: 0.82rem; white-space: nowrap; }
+.arev button {
+  font: inherit; font-size: 0.82rem; cursor: pointer;
+  background: transparent; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 6px; padding: 0.2rem 0.6rem;
+}
+.arev button:hover { color: var(--accent-2); border-color: var(--accent-2); }
+.arev-callout {
+  margin-top: 0.9rem; padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--ok);
+  background: color-mix(in srgb, var(--ok) 8%, transparent);
+  color: var(--fg); font-size: 0.86rem; line-height: 1.6;
+}
+.arev-callout[hidden] { display: none; }
+.arev-hl { color: var(--ok); font-weight: bold; }
+@media (prefers-reduced-motion: reduce) { .arev-hex .arev-b { transition: none; } }

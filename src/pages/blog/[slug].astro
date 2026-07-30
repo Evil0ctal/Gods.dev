@@ -22,3 +22,10 @@ const { Content } = await render(post)
 >
   <Content />
 </PostLayout>
+
+<script>
+  // hydrates the "Annotated Reverse" widget if a post contains its container;
+  // a no-op on every other post
+  import { mountAnnotatedReverse } from '../../components/blog/annotated-reverse'
+  mountAnnotatedReverse()
+</script>
