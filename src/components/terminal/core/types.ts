@@ -117,5 +117,6 @@ export interface Command {
   hidden?: boolean
   /** help 分组：intel/content/filesystem/shell；未设置的归入 misc */
   category?: string
-  run(args: string[], ctx: TerminalContext): CommandResult | Promise<CommandResult>
+  /** stdin: plain-text lines piped from a previous command (present when after a `|`) */
+  run(args: string[], ctx: TerminalContext, stdin?: string[]): CommandResult | Promise<CommandResult>
 }

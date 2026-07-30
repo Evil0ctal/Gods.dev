@@ -14,6 +14,8 @@ import { tracerouteCmd, nmapCmd, inspectCmd, fingerprintCmd } from './recon'
 import { buildCmd, whatsnewCmd, usesCmd } from './meta'
 import { statsCmd } from './stats'
 import { ascendCmd } from './ascend'
+import { grepCmd, wcCmd, headCmd, tailCmd, sortCmd, uniqCmd, revCmd } from './textutils'
+import { cowsayCmd, figletCmd, fortuneCmd, slCmd } from './toys'
 
 export function registerAll(reg: CommandRegistry): void {
   const commands = [
@@ -24,6 +26,8 @@ export function registerAll(reg: CommandRegistry): void {
     buildCmd, whatsnewCmd, usesCmd, statsCmd,
     gamesCmd, snakeCmd, twenty48Cmd, dinoCmd, flappyCmd, adventureCmd, birthdayCmd, fireworksCmd,
     flagCmd, sudoCmd, rmCmd, vimCmd, matrixCmd, hackCmd, exitCmd, ascendCmd,
+    grepCmd, wcCmd, headCmd, tailCmd, sortCmd, uniqCmd, revCmd,
+    cowsayCmd, figletCmd, fortuneCmd, slCmd,
     { ...contactCmd, name: 'social', hidden: true },
   ]
   for (const c of commands) reg.register(c)

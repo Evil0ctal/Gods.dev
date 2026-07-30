@@ -1,5 +1,6 @@
 import type { CommandResult, GameLaunch, OutputLine, ReplSession, TerminalContext } from '../core/types'
 import { parse } from '../core/parser'
+import { runPipeline } from '../core/pipeline'
 import { complete } from '../core/autocomplete'
 import { displayPath } from '../core/vfs'
 import { escapeHtml } from '../core/utils'
@@ -190,12 +191,8 @@ export function createTerminalUi(opts: TerminalUiOptions) {
     const parsed = parse(raw)
     if (!parsed) return
     opts.historyPush(raw)
-    const cmd = opts.ctx.registry.get(parsed.cmd)
-    if (!cmd) {
-      printHtml(`gsh: command not found: ${escapeHtml(parsed.cmd)}. try <button type="button" class="cmd-link" data-cmd="help">help</button>`, 'line-error')
-      return
-    }
-    await runResult(await cmd.run(parsed.args, opts.ctx))
+    // one path for plain and piped commands: `a | b | c` feeds text left→right
+    await runResult(await runPipeline(raw, opts.ctx, opts.ctx.registry))
     // a command may have entered vim/repl mode, which own the prompt
     if (!vimMode && !replMode) refreshPrompt()
   }
