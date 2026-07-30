@@ -111,8 +111,12 @@ async function loadStats(): Promise<StatsMeta | null> {
       .filter((r) => r.pushed_at)
       .sort((a, b) => (b.pushed_at! < a.pushed_at! ? -1 : 1))[0]
 
+    const contributions = await fetchContributions()
+
     // eslint-disable-next-line no-console
-    console.log(`[github] baked stats for ${USER}: ${owned.length} repos, ${totalStars}★`)
+    console.log(
+      `[github] baked stats for ${USER}: ${owned.length} repos, ${totalStars}★${contributions ? `, ${contributions.total} contributions` : ''}`,
+    )
     return {
       publicRepos: user?.public_repos ?? owned.length,
       followers: user?.followers ?? 0,
@@ -121,10 +125,47 @@ async function loadStats(): Promise<StatsMeta | null> {
       languages,
       latest: latestRepo ? { name: latestRepo.name, date: latestRepo.pushed_at!.slice(0, 10) } : null,
       memberSince: user?.created_at ? user.created_at.slice(0, 4) : '',
+      contributions,
     }
   } catch (err) {
     // eslint-disable-next-line no-console
     console.warn(`[github] stats fetch failed: ${err instanceof Error ? err.message : String(err)}`)
+    return null
+  }
+}
+
+/**
+ * The contribution calendar via the GitHub GraphQL API. Requires a token
+ * (GraphQL is auth-only), so it is null in tokenless local builds and populated
+ * in CI. Returns weeks of 7 daily counts (Sun..Sat), like the profile graph.
+ */
+async function fetchContributions(): Promise<{ total: number; weeks: number[][] } | null> {
+  const token = process.env.GITHUB_TOKEN ?? process.env.PROJECTS_GITHUB_TOKEN
+  if (!token) return null
+  const query =
+    'query($login:String!){user(login:$login){contributionsCollection{contributionCalendar{totalContributions weeks{contributionDays{contributionCount weekday}}}}}}'
+  try {
+    const res = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { ...ghHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { login: USER } }),
+    })
+    if (!res.ok) throw new Error(`GraphQL ${res.status}`)
+    const json = (await res.json()) as {
+      data?: { user?: { contributionsCollection?: { contributionCalendar?: { totalContributions: number; weeks: { contributionDays: { contributionCount: number; weekday: number }[] }[] } } } }
+    }
+    const cal = json?.data?.user?.contributionsCollection?.contributionCalendar
+    if (!cal) return null
+    // pad each week to 7 slots keyed by weekday (Sun=0); -1 marks days outside the range
+    const weeks = cal.weeks.map((w) => {
+      const slots = [-1, -1, -1, -1, -1, -1, -1]
+      for (const d of w.contributionDays) slots[d.weekday] = d.contributionCount
+      return slots
+    })
+    return { total: cal.totalContributions, weeks }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(`[github] contributions fetch failed: ${err instanceof Error ? err.message : String(err)}`)
     return null
   }
 }

@@ -277,3 +277,19 @@ a:hover, .term-link:hover { color: var(--accent-2); }
 .arev-callout[hidden] { display: none; }
 .arev-hl { color: var(--ok); font-weight: bold; }
 @media (prefers-reduced-motion: reduce) { .arev-hex .arev-b { transition: none; } }
+
+/* ── GitHub contribution heatmap (stats command) ──────────────────── */
+.hm-grid {
+  display: block;
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.0;
+  letter-spacing: 0.04ch;
+  margin: 0.15rem 0;
+}
+.hm { color: var(--fg-muted); }
+.hm-0 { color: color-mix(in srgb, var(--fg-muted) 28%, transparent); }
+.hm-1 { color: color-mix(in srgb, var(--ok) 40%, var(--bg)); }
+.hm-2 { color: color-mix(in srgb, var(--ok) 62%, var(--bg)); }
+.hm-3 { color: color-mix(in srgb, var(--ok) 82%, var(--bg)); }
+.hm-4 { color: var(--ok); }

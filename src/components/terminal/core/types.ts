@@ -74,6 +74,8 @@ export interface StatsMeta {
   languages: Array<{ name: string; count: number }>
   latest: { name: string; date: string } | null
   memberSince: string
+  /** contribution calendar (GraphQL, CI-only); weeks of up to 7 daily counts */
+  contributions?: { total: number; weeks: number[][] } | null
 }
 
 export interface VfsFile { type: 'file'; content: string }

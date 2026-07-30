@@ -8,6 +8,37 @@ function fmt(n: number): string {
   return `${(n / 1000).toFixed(n < 10000 ? 1 : 0).replace(/\.0$/, '')}k`
 }
 
+/** contribution count → 5 intensity levels (GitHub-style) */
+export function heatLevel(count: number): number {
+  if (count <= 0) return 0
+  if (count <= 2) return 1
+  if (count <= 5) return 2
+  if (count <= 9) return 3
+  return 4
+}
+
+/** an ASCII contribution heatmap: 7 rows (Sun..Sat) × one column per week */
+export function heatmapLines(c?: { total: number; weeks: number[][] } | null): OutputLine[] {
+  if (!c || c.weeks.length === 0) return []
+  const rows: string[] = []
+  for (let day = 0; day < 7; day++) {
+    let row = ''
+    for (const week of c.weeks) {
+      const cell = week[day] ?? -1
+      row += cell < 0 ? ' ' : `<span class="hm hm-${heatLevel(cell)}">█</span>`
+    }
+    rows.push(row)
+  }
+  return [
+    line(''),
+    htmlLine(`<span class="out-head">contributions</span> <span class="line-success">${c.total}</span> <span class="line-muted">in the last year</span>`),
+    htmlLine(`<span class="hm-grid">${rows.join('\n')}</span>`),
+    htmlLine(
+      `<span class="line-muted">less</span> ${[0, 1, 2, 3, 4].map((l) => `<span class="hm hm-${l}">█</span>`).join('')} <span class="line-muted">more</span>`,
+    ),
+  ]
+}
+
 /** pure renderer — the `stats` command is a thin wrapper so this is unit-tested */
 export function renderStats(stats: StatsMeta | null): OutputLine[] {
   if (!stats) {
@@ -28,6 +59,7 @@ export function renderStats(stats: StatsMeta | null): OutputLine[] {
   if (stats.latest) {
     out.push(kvLine('latest', `${stats.latest.name} · ${stats.latest.date}`, 11))
   }
+  out.push(...heatmapLines(stats.contributions))
   if (stats.languages.length) {
     const max = Math.max(...stats.languages.map((l) => l.count))
     const nameW = Math.max(...stats.languages.map((l) => l.name.length))

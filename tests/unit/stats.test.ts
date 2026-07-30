@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { CommandResult, StatsMeta } from '../../src/components/terminal/core/types'
-import { renderStats, statsCmd } from '../../src/components/terminal/commands/stats'
+import { renderStats, statsCmd, heatmapLines, heatLevel } from '../../src/components/terminal/commands/stats'
 import { makeCtx } from './helpers'
 
 const SAMPLE: StatsMeta = {
@@ -38,6 +38,42 @@ describe('renderStats', () => {
     const text = renderStats(null).map((l) => l.text).join('\n')
     expect(text).toContain('unavailable')
     expect(text).toContain('github.com/Evil0ctal')
+  })
+})
+
+describe('contribution heatmap', () => {
+  const contributions = {
+    total: 1234,
+    weeks: [
+      [0, 1, 3, 6, 12, -1, -1], // a partial week with each intensity level + out-of-range slots
+      [2, 2, 2, 2, 2, 2, 2],
+    ],
+  }
+  it('heatLevel buckets counts into 5 levels', () => {
+    expect(heatLevel(0)).toBe(0)
+    expect(heatLevel(1)).toBe(1)
+    expect(heatLevel(5)).toBe(2)
+    expect(heatLevel(9)).toBe(3)
+    expect(heatLevel(50)).toBe(4)
+  })
+  it('renders 7 day-rows, the total, and a legend', () => {
+    const text = heatmapLines(contributions).map((l) => l.text).join('\n')
+    expect(text).toContain('contributions')
+    expect(text).toContain('1234')
+    expect(text).toContain('hm-grid')
+    expect(text).toContain('hm-4') // the level-4 cell from count 12
+    // 7 day rows inside the grid
+    const grid = heatmapLines(contributions).find((l) => l.text.includes('hm-grid'))!.text
+    expect(grid.split('\n').length).toBe(7)
+  })
+  it('is empty when there is no calendar', () => {
+    expect(heatmapLines(null)).toEqual([])
+    expect(heatmapLines({ total: 0, weeks: [] })).toEqual([])
+  })
+  it('renderStats includes the heatmap when contributions are present', () => {
+    const text = renderStats({ ...SAMPLE, contributions }).map((l) => l.text).join('\n')
+    expect(text).toContain('contributions')
+    expect(text).toContain('hm-grid')
   })
 })
 
