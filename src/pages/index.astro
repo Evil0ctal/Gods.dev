@@ -100,7 +100,7 @@ const personLd = {
       </div>
     </div>
   </main>
-  <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts, studies, projects, stats }).replaceAll('<', '\u003c')} />
+  <script type="application/json" id="terminal-data" set:html={JSON.stringify({ posts, studies: studies.map((s) => ({ slug: s.slug, title: s.title, description: '', date: s.date })), projects, stats }).replaceAll('<', '\u003c')} />
   <script>
     import { mountTerminal } from '../components/terminal/index'
     mountTerminal()

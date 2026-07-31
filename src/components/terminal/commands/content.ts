@@ -80,15 +80,21 @@ export const studyCmd: Command = {
     if (ctx.studies.length === 0) {
       return { lines: [line('No studies yet. The word endures; the notes are coming.', 'muted')] }
     }
+    const CAP = 40
+    const total = ctx.studies.length
+    const shown = ctx.studies.slice(0, CAP)
     return {
       lines: [
-        headLine('bible study — rightly dividing the word'),
+        headLine(`bible study — rightly dividing the word (${total} notes)`),
         line(''),
-        ...ctx.studies.map((s) =>
+        ...shown.map((s) =>
           htmlLine(
             `  <span class="kv-key">${escapeHtml(s.date)}</span>  <a class="term-link out-name" href="/study/${escapeHtml(s.slug)}/">${escapeHtml(s.slug)}</a> — ${escapeHtml(s.title)}`,
           ),
         ),
+        ...(total > CAP
+          ? [htmlLine(`  <span class="line-muted">…and ${total - CAP} older — browse them all at</span> <a class="term-link" href="/study/">/study/</a>`)]
+          : []),
         line(''),
         line('open one  →  study read <slug>   ·   source text  →  bible classics', 'muted'),
       ],
