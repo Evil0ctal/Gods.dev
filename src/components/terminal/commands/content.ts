@@ -117,15 +117,20 @@ export const blogCmd: Command = {
     if (ctx.posts.length === 0) {
       return { lines: [line('No posts yet. The gods are still writing.', 'muted')] }
     }
+    const CAP = 30
+    const total = ctx.posts.length
     return {
       lines: [
-        headLine('latest transmissions'),
+        headLine(`latest transmissions (${total} posts)`),
         line(''),
-        ...ctx.posts.map((p) =>
+        ...ctx.posts.slice(0, CAP).map((p) =>
           htmlLine(
             `  <span class="kv-key">${escapeHtml(p.date)}</span>  <a class="term-link out-name" href="/blog/${escapeHtml(p.slug)}/">${escapeHtml(p.slug)}</a> — ${escapeHtml(p.title)}`,
           ),
         ),
+        ...(total > CAP
+          ? [htmlLine(`  <span class="line-muted">…and ${total - CAP} more — the full archive is at</span> <a class="term-link" href="/blog/">/blog/</a>`)]
+          : []),
         line(''),
         line('open one  →  blog read <slug>', 'muted'),
       ],

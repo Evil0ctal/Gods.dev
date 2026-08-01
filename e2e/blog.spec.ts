@@ -6,9 +6,9 @@ test('blog index lists published posts, newest first', async ({ page }) => {
     .locator('.post-list time')
     .evaluateAll((els) => els.map((e) => e.getAttribute('datetime') ?? ''))
   expect(times.length).toBeGreaterThan(1)
-  // dates are listed in descending (newest-first) order
+  // dates are listed in descending (newest-first) order (across the per-year groups)
   expect(times).toEqual([...times].sort().reverse())
-  await expect(page.locator('.post-list')).toContainText('Building gods.dev')
+  await expect(page.locator('a[href="/blog/building-gods-dev/"]')).toBeVisible()
 })
 
 test('draft posts are excluded from the production build', async ({ page }) => {
