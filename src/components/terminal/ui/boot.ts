@@ -1,12 +1,18 @@
 import { escapeHtml } from '../core/utils'
 
 /**
- * Four-act boot: BIOS/POST → host probe → GRUB → kernel/systemd.
- * The host-probe act reads the visitor's own browser facts (cores, memory,
- * GPU, display, locale, agent) entirely client-side and prints them back —
- * nothing is sent anywhere. Renders into (and clears) a container so progress
- * bars and the GRUB "screen" update in place. Any input flips skip() → the
- * sequence fast-forwards to the end and returns.
+ * Four-act boot, styled as an offensive-security operator console:
+ *   1. cold boot — the gsh operator console comes online
+ *   2. recon    — fingerprint the visitor's own machine (all read locally)
+ *   3. exploit  — an msfconsole/meterpreter-flavoured run against olympus
+ *   4. session  — drop into the gods shell (gsh)
+ *
+ * The recon act reads the visitor's browser facts (cores, memory, GPU, display,
+ * pointer, theme, network, privacy signals, agent…) entirely client-side and
+ * prints them back — nothing is sent anywhere; the "exploit" is pure theatre
+ * against a fictional target. Renders into (and clears) a container so progress
+ * bars update in place. Any input flips skip() → the sequence fast-forwards to
+ * the end and returns.
  */
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -17,6 +23,9 @@ export interface BootOptions {
 }
 
 const val = (s: string) => `<span class="out-name">${escapeHtml(s)}</span>`
+const STAR = '<span class="boot-star">[*]</span>'
+const PLUS = '<span class="line-success">[+]</span>'
+const MINUS = '<span class="line-error">[-]</span>'
 
 /** best-effort friendly "Browser X on OS" from the UA / UA-Client-Hints */
 function parseAgent(): string {
@@ -44,44 +53,126 @@ function parseAgent(): string {
   }
 }
 
-function gpuRenderer(): string {
+function gpu(): string {
   try {
     const c = document.createElement('canvas')
     const gl = (c.getContext('webgl') || c.getContext('experimental-webgl')) as WebGLRenderingContext | null
     if (!gl) return 'no accelerated device'
     const ext = gl.getExtension('WEBGL_debug_renderer_info')
+    const vendor = ext ? (gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) as string) : ''
     const r = ext ? (gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) as string) : ''
-    return r || 'a shy graphics device'
+    const s = [vendor, r].filter(Boolean).join(' / ')
+    return s || 'a shy graphics device'
   } catch {
     return 'a shy graphics device'
   }
 }
 
+/** high-entropy UA-CH (arch / bitness / platform version) — async, guarded */
+async function kernelString(): Promise<string> {
+  const nav = navigator as Navigator & {
+    userAgentData?: {
+      platform?: string
+      getHighEntropyValues?: (h: string[]) => Promise<Record<string, string>>
+    }
+  }
+  const plat = nav.userAgentData?.platform || (navigator.platform ?? 'unknown')
+  try {
+    const hev = await nav.userAgentData?.getHighEntropyValues?.([
+      'architecture',
+      'bitness',
+      'platformVersion',
+    ])
+    if (hev) {
+      const arch = hev.architecture ? `${hev.architecture}${hev.bitness ? '/' + hev.bitness : ''}` : ''
+      const ver = hev.platformVersion ? ` ${hev.platformVersion}` : ''
+      return [`${plat}${ver}`, arch].filter(Boolean).join(' · ')
+    }
+  } catch {
+    /* ignore */
+  }
+  return plat
+}
+
+const mq = (q: string): boolean => {
+  try {
+    return window.matchMedia(q).matches
+  } catch {
+    return false
+  }
+}
+
 /** lines describing the visitor's own machine — real values, read locally */
-function hostProbe(): string[] {
-  const n = navigator as Navigator & { deviceMemory?: number }
-  const cores = n.hardwareConcurrency ? `${n.hardwareConcurrency} cores online` : 'core count sealed'
-  const mem = n.deviceMemory ? `≥ ${n.deviceMemory} GiB` : 'undisclosed'
+async function fingerprint(): Promise<string[]> {
+  const n = navigator as Navigator & {
+    deviceMemory?: number
+    connection?: { effectiveType?: string; downlink?: number; rtt?: number }
+    doNotTrack?: string
+  }
+  const perf = performance as Performance & { memory?: { jsHeapSizeLimit?: number } }
+
+  const cores = n.hardwareConcurrency ? `${n.hardwareConcurrency} cores` : 'core count sealed'
+  const heap = perf.memory?.jsHeapSizeLimit
+    ? ` · js heap ≤ ${Math.round(perf.memory.jsHeapSizeLimit / 1048576)} MiB`
+    : ''
+  const mem = n.deviceMemory ? `≥ ${n.deviceMemory} GiB${heap}` : `undisclosed${heap}`
   const dpr = Number((window.devicePixelRatio || 1).toFixed(2))
-  const display = `${screen.width}×${screen.height} @ ${dpr}x · viewport ${window.innerWidth}×${window.innerHeight}`
+  const display = `${screen.width}×${screen.height} @ ${dpr}x · ${screen.colorDepth}-bit · viewport ${window.innerWidth}×${window.innerHeight}`
+
+  const pointer = mq('(pointer: fine)') ? 'fine' : mq('(pointer: coarse)') ? 'coarse' : 'unknown'
+  const touch = 'ontouchstart' in window || n.maxTouchPoints > 0 ? `${n.maxTouchPoints || '?'} pts` : 'none'
+  const theme = mq('(prefers-color-scheme: dark)') ? 'dark' : 'light'
+  const motion = mq('(prefers-reduced-motion: reduce)') ? 'reduced' : 'full'
+
   const lang = n.language || 'unknown'
+  const langs = Array.isArray(n.languages) && n.languages.length > 1 ? ` [${n.languages.slice(0, 4).join(', ')}]` : ''
   let tz = 'unknown'
   try {
     tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'
   } catch {
     /* ignore */
   }
-  const touch = 'ontouchstart' in window || n.maxTouchPoints > 0 ? 'present' : 'absent'
-  const net = n.onLine ? 'online' : 'offline'
+
+  const c = n.connection
+  const uplink = [
+    c?.effectiveType,
+    typeof c?.downlink === 'number' ? `${c.downlink} Mbps` : null,
+    typeof c?.rtt === 'number' ? `${c.rtt} ms rtt` : null,
+    n.onLine ? 'online' : 'offline',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+
+  const dnt = n.doNotTrack === '1' || (window as unknown as { doNotTrack?: string }).doNotTrack === '1' ? 'on' : 'unset'
+  const privacy = `cookies: ${navigator.cookieEnabled ? 'on' : 'off'} · DNT: ${dnt}`
+  let vector = 'direct'
+  try {
+    if (document.referrer) vector = `referred by ${new URL(document.referrer).host}`
+  } catch {
+    /* ignore */
+  }
+  let clock = 'unknown'
+  try {
+    clock = new Date().toLocaleString(lang, { hour12: false })
+  } catch {
+    /* ignore */
+  }
+
+  const row = (k: string, v: string) => `    ${k.padEnd(9, '.')}. ${val(v)}`
   return [
-    `  cpu ......... ${val(cores)}`,
-    `  memory ...... ${val(mem)}`,
-    `  gpu ......... ${val(gpuRenderer())}`,
-    `  display ..... ${val(display)}`,
-    `  input ....... keyboard, mouse, touch: ${val(touch)}`,
-    `  locale ...... ${val(lang)}  ·  tz ${val(tz)}`,
-    `  agent ....... ${val(parseAgent())}`,
-    `  uplink ...... ${val(net)}`,
+    row('host', parseAgent()),
+    row('kernel', await kernelString()),
+    row('cpu', cores),
+    row('ram', mem),
+    row('gpu', gpu()),
+    row('display', display),
+    row('pointer', `${pointer} · touch: ${touch}`),
+    row('theme', `${theme} · motion: ${motion}`),
+    row('locale', `${lang}${langs} · tz ${tz}`),
+    row('uplink', uplink),
+    row('privacy', privacy),
+    row('vector', vector),
+    row('clock', `${clock} local`),
   ]
 }
 
@@ -98,104 +189,108 @@ export async function playBoot({ output, skip }: BootOptions): Promise<void> {
   const pause = async (ms: number) => {
     if (!skip()) await sleep(ms)
   }
+  // an in-place progress bar; resolves once full (or immediately on skip)
+  const runBar = async (label: string, width: number, step: number) => {
+    const bl = add('', 'line-success')
+    for (let i = 0; i <= width; i++) {
+      const pct = Math.round((i / width) * 100)
+      bl.innerHTML = ` ${label} <span class="boot-bar">${'█'.repeat(i)}${'░'.repeat(width - i)}</span> ${String(pct).padStart(3)}%`
+      if (skip()) {
+        bl.innerHTML = ` ${label} <span class="boot-bar">${'█'.repeat(width)}</span> 100%`
+        return
+      }
+      await sleep(step)
+    }
+  }
 
-  // ── Act 1: BIOS / POST ──────────────────────────────────────────
-  const bios: Array<[string, number]> = [
-    ['<span class="out-name">SeaBIOS</span> (Olympus Edition) v1.0 — the old gods', 160],
-    ['Copyright (C) the Pantheon. All realms reserved.', 140],
-    ['', 80],
-    ['CPU: divine spark @ 3.14 THz ..................... <span class="line-success">OK</span>', 150],
-    ['Memory Test: 64 PiB ............................. <span class="line-success">OK</span>', 170],
-    ['Detecting drives: /dev/hubris  /dev/fate  /dev/styx', 150],
-    ['Boot order: network → /dev/hubris', 130],
+  // ── Act 1: cold boot — the operator console comes online ────────
+  const banner: Array<[string, number]> = [
+    ['<span class="out-name">gsh</span> — the gods.dev operator console  ·  build 1.0-olympus', 150],
+    ['Copyright (C) the Pantheon. Authorized vessels only.', 130],
+    ['', 70],
+    [`${STAR} cold boot — initializing framework modules ................ <span class="line-success">ok</span>`, 150],
+    [`${STAR} loaded 8 payloads · 7 exploits · 12 auxiliary`, 140],
+    [`${STAR} acquiring target: <span class="out-name">gods.dev</span> (you)`, 160],
   ]
-  for (const [html, ms] of bios) {
+  for (const [html, ms] of banner) {
+    add(html, 'line-muted')
+    await pause(ms)
+  }
+  await pause(360)
+  if (skip()) return clear()
+
+  // ── Act 2: recon (fingerprint the visitor's real machine) ───────
+  clear()
+  add(`${STAR} recon — fingerprinting the vessel you arrived in`, 'line-muted')
+  add(`${STAR} <span class="line-muted">everything below is read locally. no packets leave this machine.</span>`, 'line-muted')
+  add('', 'line-muted')
+  for (const l of await fingerprint()) {
+    add(l, 'line-muted')
+    await pause(95)
+  }
+  add('', 'line-muted')
+  add(`${PLUS} fingerprint complete — <span class="out-name">0 bytes</span> exfiltrated.`, 'line-muted')
+  await pause(650)
+  if (skip()) return clear()
+
+  // ── Act 3: exploit (pure theatre against a fictional target) ────
+  clear()
+  const pre: Array<[string, number]> = [
+    [`${STAR} using <span class="out-name">olympus/http/gates_of_hubris</span> (CVE-θ-3141)`, 150],
+    [`${STAR} started reverse handler on 127.0.0.1:31337`, 150],
+    [`${STAR} heap grooming ....................................... <span class="line-success">done</span>`, 170],
+    [`${STAR} running exploit against <span class="out-name">gods.dev</span> ...`, 220],
+  ]
+  for (const [html, ms] of pre) {
+    add(html, 'line-muted')
+    await pause(ms)
+  }
+  await runBar('downloading poc  hubris.rop ', 24, 40)
+  await pause(140)
+  const mid: Array<[string, number]> = [
+    [`${STAR} sending stage (<span class="out-name">divine_spark.elf</span>, 31337 bytes) ...`, 200],
+    [`${MINUS} <span class="line-error">Cerberus/3.0</span> WAF detected — three heads, one door`, 200],
+    [`${STAR} bypassing WAF via 0xθ .............................. <span class="line-success">bypassed</span>`, 220],
+    [`${PLUS} session <span class="out-name">1</span> opened  (guest@vessel → gods.dev:31337)`, 240],
+  ]
+  for (const [html, ms] of mid) {
     add(html, 'line-muted')
     await pause(ms)
   }
   await pause(420)
   if (skip()) return clear()
 
-  // ── Act 2: host probe (the visitor's real machine) ──────────────
+  // ── Act 4: post-ex → drop into the gods shell ───────────────────
   clear()
-  add('probing host — scrying the vessel you arrived in ...', 'line-muted')
-  await pause(360)
-  for (const l of hostProbe()) {
-    add(l, 'line-muted')
-    await pause(150)
-  }
-  add('', 'line-muted')
-  add('  <span class="line-success">✓</span> vessel accepted. no telemetry leaves this machine.', 'line-muted')
-  await pause(650)
-  if (skip()) return clear()
-
-  // ── Act 3: GRUB ─────────────────────────────────────────────────
-  clear()
-  const grub = [
-    ' ┌─ GNU GRUB  version 0.θ ─────────────────────────┐',
-    ' │ <span class="boot-grub-sel">*gods.dev  (kernel 1.0-olympus)                  </span>│',
-    ' │  gods.dev  (recovery mode)                      │',
-    ' │  memtest86+  (the old gods)                     │',
-    ' └─────────────────────────────────────────────────┘',
-    '',
-    ' Use ↑ and ↓ to select. Booting the highlighted entry in <span class="boot-count">3</span>s.',
+  const shell: Array<[string, number]> = [
+    ['<span class="line-success">gsh</span> session 1 &gt; <span class="out-name">whoami</span>', 200],
+    ['guest  (uid=1000)  —  root is earned, not given. try: <span class="out-name">ctf</span>', 220],
+    ['<span class="line-success">gsh</span> session 1 &gt; <span class="out-name">uname -a</span>', 200],
+    ['gods.dev 1.0.0-olympus #1 SMP the-old-gods x86_θ GNU/Divinity', 200],
+    ['<span class="line-success">gsh</span> session 1 &gt; <span class="out-name">exec /bin/gsh</span>', 220],
   ]
-  for (const l of grub) add(l, 'line-ascii')
-  const count = output.querySelector<HTMLElement>('.boot-count')
-  for (const n of ['2', '1', '0']) {
-    await pause(520)
-    if (count && !skip()) count.textContent = n
-  }
-  await pause(300)
-  if (skip()) return clear()
-
-  // ── Act 4: kernel + systemd ─────────────────────────────────────
-  clear()
-  const kernel: Array<[string, number]> = [
-    ['[    0.000000] gods.dev kernel 1.0.0-olympus booting...', 130],
-    ['[    0.041337] cpu0: divine spark detected, 1 core online', 120],
-    ['[    0.133700] mounting /dev/hubris on /home/guest ... <span class="line-success">ok</span>', 130],
-    ['[    0.271828] loading personality: <span class="out-name">evil0ctal.ko</span>', 120],
-    ['[    0.314159] easter_eggs: 8 modules loaded (some hidden)', 130],
-    ['[    0.577215] ctf: 7 challenges armed', 120],
-  ]
-  for (const [html, ms] of kernel) {
+  for (const [html, ms] of shell) {
     add(html, 'line-muted')
     await pause(ms)
   }
 
   const units: Array<[string, 'ok' | 'warn']> = [
-    ['Reached target Olympus.', 'ok'],
     ['Mounted /home/guest.', 'ok'],
-    ['Started Divine Spark Service.', 'ok'],
+    ['Loaded personality: evil0ctal.ko', 'ok'],
+    ['Armed 7 CTF challenges · 8 easter-egg modules.', 'ok'],
     ['Reached target Network (github.com/Evil0ctal).', 'ok'],
-    ['Started easter-egg daemon.', 'ok'],
-    ['Started the arcade (snake, 2048, ascent).', 'ok'],
     ['reality-check: FAILED — continuing anyway.', 'warn'],
     ['Started gods shell (gsh).', 'ok'],
   ]
   for (const [msg, kind] of units) {
     const tag =
-      kind === 'ok'
-        ? '[  <span class="line-success">OK</span>  ]'
-        : '[ <span class="line-error">WARN</span> ]'
+      kind === 'ok' ? '[  <span class="line-success">OK</span>  ]' : '[ <span class="line-error">WARN</span> ]'
     add(`${tag} ${msg}`)
-    await pause(130)
+    await pause(120)
   }
 
-  // progress bar, updated in place
   add('', 'line-muted')
-  const barLine = add('', 'line-success')
-  const WIDTH = 28
-  for (let i = 0; i <= WIDTH; i++) {
-    const pct = Math.round((i / WIDTH) * 100)
-    barLine.innerHTML = ` booting <span class="boot-bar">${'█'.repeat(i)}${'░'.repeat(WIDTH - i)}</span> ${String(pct).padStart(3)}%`
-    if (skip()) {
-      barLine.innerHTML = ` booting <span class="boot-bar">${'█'.repeat(WIDTH)}</span> 100%`
-      break
-    }
-    await sleep(45)
-  }
+  await runBar('spawning gsh', 28, 42)
   await pause(400)
   clear()
 }
