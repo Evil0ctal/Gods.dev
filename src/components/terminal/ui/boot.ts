@@ -138,6 +138,8 @@ function entryVector(): string {
     [/linkedin\./, 'LinkedIn'],
     [/(facebook|fb)\./, 'Facebook'],
     [/(youtube\.com|youtu\.be)/, 'YouTube'],
+    [/(steamcommunity\.com|steampowered\.com)/, 'Steam'],
+    [/discord\.(com|gg)/, 'Discord'],
     [/(^|\.)t\.me$|telegram\./, 'Telegram'],
     [/baidu\./, 'a Baidu search'],
     [/zhihu\./, 'Zhihu'],
