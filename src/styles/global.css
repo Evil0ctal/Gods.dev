@@ -162,6 +162,8 @@ a:hover, .term-link:hover { color: var(--accent-2); }
 .boot-count { color: var(--accent); font-weight: 600; }
 .boot-bar { color: var(--ok); letter-spacing: -1px; }
 .boot-star { color: var(--accent-2); font-weight: 600; }
+.boot-caret { color: var(--accent); animation: boot-blink 1s step-end infinite; }
+@keyframes boot-blink { 50% { opacity: 0; } }
 .boot-skip-hint {
   color: var(--fg-muted);
   opacity: 0.6;
